@@ -1,9 +1,43 @@
 # react-native-readium
 
-[![NPM version](https://img.shields.io/npm/v/react-native-readium.svg?color=success&label=npm%20package&logo=npm)](https://www.npmjs.com/package/react-native-readium)
+> **This is a fork of [5-stones/react-native-readium](https://github.com/5-stones/react-native-readium) maintained on the [`open-citadel-main`](https://github.com/dr-33-m/react-native-readium/tree/open-citadel-main) branch for the [Open Citadel](https://github.com/dr-33-m/open-citadel) project.**
+> Published to npm as [`@dr33m/react-native-readium`](https://www.npmjs.com/package/@dr33m/react-native-readium).
+>
+> See [What this fork adds](#what-this-fork-adds) for the full list of changes on top of upstream.
+
+[![NPM version](https://img.shields.io/npm/v/%40dr33m%2Freact-native-readium/next.svg?color=success&label=npm%20package&logo=npm)](https://www.npmjs.com/package/@dr33m/react-native-readium)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![PRs welcome!](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 ![This project is released under the MIT license](https://img.shields.io/badge/license-MIT-blue.svg)
+
+---
+
+## What this fork adds
+
+This fork is built on top of `5.0.0-rc.17` of the upstream package and adds the following on the `open-citadel-main` branch:
+
+### Text-to-Speech (TTS)
+
+Full TTS support for EPUB books on Android and iOS:
+
+- **Android** — powered by the Readium `readium-navigator-media-tts` module, which uses the platform `TextToSpeech` engine (no ExoPlayer dependency).
+- **iOS** — powered by `AVSpeechSynthesizer` via the Readium Swift Toolkit's `PublicationSpeechSynthesizer`.
+- New prop **`tts`** — pass a `TTSConfig` object to start, stop, pause, resume, or seek TTS playback.
+- New callback **`onTTSStateChange`** — fires whenever TTS state changes (`playing`, `paused`, `stopped`).
+- New callback **`onTTSLocatorChange`** — fires with the current `Locator` as TTS advances through the book, allowing the UI to follow along.
+- New callback **`onTTSError`** — fires with an error message if TTS fails to initialise or encounters a read error.
+
+### Android Storage Access Framework (SAF) support
+
+`ReaderService.openPublication` now accepts `content://` URIs (Android SAF) in addition to raw file paths. The display name is resolved from the content resolver so bookId and file extension are always correctly extracted.
+
+### EPUB-only routing
+
+PDF support has been removed from this fork (it was experimental and caused crashes). Only EPUB publications are opened; any other format logs a warning and returns gracefully. `pdfFactory` is explicitly set to `null` in `DefaultPublicationParser`.
+
+### Readium Kotlin Toolkit bump
+
+Android native dependencies updated to `readium-kotlin-toolkit 3.1.2` (from `3.1.0` in upstream rc.17). The `readium-adapter-pdfium` dependency is removed entirely.
 
 ---
 
@@ -60,13 +94,13 @@ This library uses [Nitro Modules](https://nitro.margelo.com/) and supports both 
 **NPM**
 
 ```sh
-npm install react-native-readium react-native-nitro-modules
+npm install @dr33m/react-native-readium@next react-native-nitro-modules
 ```
 
 **Yarn**
 
 ```sh
-yarn add react-native-readium react-native-nitro-modules
+yarn add @dr33m/react-native-readium@next react-native-nitro-modules
 ```
 
 #### iOS

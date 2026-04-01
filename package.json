@@ -1,6 +1,6 @@
 {
   "name": "@dr33m/react-native-readium",
-  "version": "5.0.0-rc.18",
+  "version": "5.0.0-rc.19",
   "description": "A react-native wrapper for https://readium.org/",
   "main": "lib/src/index",
   "types": "lib/src/index.d.ts",
@@ -61,7 +61,12 @@
     "e-reader",
     "read"
   ],
-  "repository": "http://github.com/5-stones/react-native-readium",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dr-33-m/react-native-readium.git",
+    "directory": ".",
+    "branch": "open-citadel-main"
+  },
   "author": "Jacob Spizziri <jspizziri@weare5stones.com> (https://github.com/jspizziri)",
   "license": "MIT",
   "bugs": {
