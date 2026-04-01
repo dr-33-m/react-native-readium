@@ -58,6 +58,12 @@ namespace margelo::nitro::readium { struct Point; }
 namespace margelo::nitro::readium { struct SelectionEvent; }
 // Forward declaration of `SelectionActionEvent` to properly resolve imports.
 namespace margelo::nitro::readium { struct SelectionActionEvent; }
+// Forward declaration of `TTSState` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSState; }
+// Forward declaration of `TTSUtteranceEvent` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSUtteranceEvent; }
+// Forward declaration of `TTSConfig` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSConfig; }
 
 #include "ReadiumFile.hpp"
 #include <optional>
@@ -87,6 +93,9 @@ namespace margelo::nitro::readium { struct SelectionActionEvent; }
 #include "Point.hpp"
 #include "SelectionEvent.hpp"
 #include "SelectionActionEvent.hpp"
+#include "TTSState.hpp"
+#include "TTSUtteranceEvent.hpp"
+#include "TTSConfig.hpp"
 
 #include "NitroReadium-Swift-Cxx-Umbrella.hpp"
 
@@ -162,6 +171,13 @@ namespace margelo::nitro::readium {
     inline void setSelectionActions(const std::optional<std::vector<SelectionAction>>& selectionActions) noexcept override {
       _swiftPart.setSelectionActions(selectionActions);
     }
+    inline std::optional<bool> getSuppressNativeSelectionMenu() noexcept override {
+      auto __result = _swiftPart.getSuppressNativeSelectionMenu();
+      return __result;
+    }
+    inline void setSuppressNativeSelectionMenu(std::optional<bool> suppressNativeSelectionMenu) noexcept override {
+      _swiftPart.setSuppressNativeSelectionMenu(suppressNativeSelectionMenu);
+    }
     inline std::optional<std::function<void(const Locator& /* locator */)>> getOnLocationChange() noexcept override {
       auto __result = _swiftPart.getOnLocationChange();
       return __result;
@@ -197,6 +213,27 @@ namespace margelo::nitro::readium {
     inline void setOnSelectionAction(const std::optional<std::function<void(const SelectionActionEvent& /* event */)>>& onSelectionAction) noexcept override {
       _swiftPart.setOnSelectionAction(onSelectionAction);
     }
+    inline std::optional<std::function<void(const TTSState& /* state */)>> getOnTTSStateChange() noexcept override {
+      auto __result = _swiftPart.getOnTTSStateChange();
+      return __result;
+    }
+    inline void setOnTTSStateChange(const std::optional<std::function<void(const TTSState& /* state */)>>& onTTSStateChange) noexcept override {
+      _swiftPart.setOnTTSStateChange(onTTSStateChange);
+    }
+    inline std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>> getOnTTSUtterance() noexcept override {
+      auto __result = _swiftPart.getOnTTSUtterance();
+      return __result;
+    }
+    inline void setOnTTSUtterance(const std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>& onTTSUtterance) noexcept override {
+      _swiftPart.setOnTTSUtterance(onTTSUtterance);
+    }
+    inline std::optional<std::function<void(const std::string& /* error */)>> getOnTTSError() noexcept override {
+      auto __result = _swiftPart.getOnTTSError();
+      return __result;
+    }
+    inline void setOnTTSError(const std::optional<std::function<void(const std::string& /* error */)>>& onTTSError) noexcept override {
+      _swiftPart.setOnTTSError(onTTSError);
+    }
 
   public:
     // Methods
@@ -220,6 +257,48 @@ namespace margelo::nitro::readium {
     }
     inline void destroy() override {
       auto __result = _swiftPart.destroy();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void ttsStart(const TTSConfig& config) override {
+      auto __result = _swiftPart.ttsStart(std::forward<decltype(config)>(config));
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void ttsStop() override {
+      auto __result = _swiftPart.ttsStop();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void ttsPause() override {
+      auto __result = _swiftPart.ttsPause();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void ttsResume() override {
+      auto __result = _swiftPart.ttsResume();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void ttsSetRate(double rate) override {
+      auto __result = _swiftPart.ttsSetRate(std::forward<decltype(rate)>(rate));
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void ttsSkipNext() override {
+      auto __result = _swiftPart.ttsSkipNext();
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+    }
+    inline void ttsSkipPrevious() override {
+      auto __result = _swiftPart.ttsSkipPrevious();
       if (__result.hasError()) [[unlikely]] {
         std::rethrow_exception(__result.error());
       }

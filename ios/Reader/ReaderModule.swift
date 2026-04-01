@@ -33,11 +33,6 @@ final class ReaderModule: ReaderModuleAPI {
       // CBZModule(delegate: self),
       EPUBModule(delegate: self),
     ]
-
-    // TODO: add PDF reader later
-    // if #available(iOS 11.0, *) {
-    //   formatModules.append(PDFModule(delegate: self))
-    // }
   }
 
   func getViewController(

@@ -78,6 +78,14 @@ export const ReadiumView = React.forwardRef<ReadiumViewRef, ReadiumProps>(
         prevPage: () => {
           navigator?.goBackward(true, () => {});
         },
+        // TTS not supported on web
+        ttsStart: () => {},
+        ttsStop: () => {},
+        ttsPause: () => {},
+        ttsResume: () => {},
+        ttsSetRate: () => {},
+        ttsSkipNext: () => {},
+        ttsSkipPrevious: () => {},
       }),
       [navigator]
     );

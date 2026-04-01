@@ -53,6 +53,12 @@ namespace margelo::nitro::readium { struct Point; }
 namespace margelo::nitro::readium { struct SelectionEvent; }
 // Forward declaration of `SelectionActionEvent` to properly resolve imports.
 namespace margelo::nitro::readium { struct SelectionActionEvent; }
+// Forward declaration of `TTSState` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSState; }
+// Forward declaration of `TTSUtteranceEvent` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSUtteranceEvent; }
+// Forward declaration of `TTSConfig` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSConfig; }
 
 #include "ReadiumFile.hpp"
 #include <optional>
@@ -111,6 +117,15 @@ namespace margelo::nitro::readium { struct SelectionActionEvent; }
 #include "SelectionActionEvent.hpp"
 #include "JFunc_void_SelectionActionEvent.hpp"
 #include "JSelectionActionEvent.hpp"
+#include "TTSState.hpp"
+#include "JFunc_void_TTSState.hpp"
+#include "JTTSState.hpp"
+#include "TTSUtteranceEvent.hpp"
+#include "JFunc_void_TTSUtteranceEvent.hpp"
+#include "JTTSUtteranceEvent.hpp"
+#include "JFunc_void_std__string.hpp"
+#include "TTSConfig.hpp"
+#include "JTTSConfig.hpp"
 
 namespace margelo::nitro::readium {
 
@@ -214,6 +229,15 @@ namespace margelo::nitro::readium {
       return __array;
     }() : nullptr);
   }
+  std::optional<bool> JHybridReadiumViewSpec::getSuppressNativeSelectionMenu() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JBoolean>()>("getSuppressNativeSelectionMenu");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional(static_cast<bool>(__result->value())) : std::nullopt;
+  }
+  void JHybridReadiumViewSpec::setSuppressNativeSelectionMenu(std::optional<bool> suppressNativeSelectionMenu) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(jni::alias_ref<jni::JBoolean> /* suppressNativeSelectionMenu */)>("setSuppressNativeSelectionMenu");
+    method(_javaPart, suppressNativeSelectionMenu.has_value() ? jni::JBoolean::valueOf(suppressNativeSelectionMenu.value()) : nullptr);
+  }
   std::optional<std::function<void(const Locator& /* locator */)>> JHybridReadiumViewSpec::getOnLocationChange() {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void_Locator::javaobject>()>("getOnLocationChange_cxx");
     auto __result = method(_javaPart);
@@ -299,6 +323,57 @@ namespace margelo::nitro::readium {
     static const auto method = _javaPart->javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_SelectionActionEvent::javaobject> /* onSelectionAction */)>("setOnSelectionAction_cxx");
     method(_javaPart, onSelectionAction.has_value() ? JFunc_void_SelectionActionEvent_cxx::fromCpp(onSelectionAction.value()) : nullptr);
   }
+  std::optional<std::function<void(const TTSState& /* state */)>> JHybridReadiumViewSpec::getOnTTSStateChange() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void_TTSState::javaobject>()>("getOnTTSStateChange_cxx");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional([&]() -> std::function<void(const TTSState& /* state */)> {
+      if (__result->isInstanceOf(JFunc_void_TTSState_cxx::javaClassStatic())) [[likely]] {
+        auto downcast = jni::static_ref_cast<JFunc_void_TTSState_cxx::javaobject>(__result);
+        return downcast->cthis()->getFunction();
+      } else {
+        auto __resultRef = jni::make_global(__result);
+        return JNICallable<JFunc_void_TTSState, void(TTSState)>(std::move(__resultRef));
+      }
+    }()) : std::nullopt;
+  }
+  void JHybridReadiumViewSpec::setOnTTSStateChange(const std::optional<std::function<void(const TTSState& /* state */)>>& onTTSStateChange) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_TTSState::javaobject> /* onTTSStateChange */)>("setOnTTSStateChange_cxx");
+    method(_javaPart, onTTSStateChange.has_value() ? JFunc_void_TTSState_cxx::fromCpp(onTTSStateChange.value()) : nullptr);
+  }
+  std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>> JHybridReadiumViewSpec::getOnTTSUtterance() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void_TTSUtteranceEvent::javaobject>()>("getOnTTSUtterance_cxx");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional([&]() -> std::function<void(const TTSUtteranceEvent& /* event */)> {
+      if (__result->isInstanceOf(JFunc_void_TTSUtteranceEvent_cxx::javaClassStatic())) [[likely]] {
+        auto downcast = jni::static_ref_cast<JFunc_void_TTSUtteranceEvent_cxx::javaobject>(__result);
+        return downcast->cthis()->getFunction();
+      } else {
+        auto __resultRef = jni::make_global(__result);
+        return JNICallable<JFunc_void_TTSUtteranceEvent, void(TTSUtteranceEvent)>(std::move(__resultRef));
+      }
+    }()) : std::nullopt;
+  }
+  void JHybridReadiumViewSpec::setOnTTSUtterance(const std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>& onTTSUtterance) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_TTSUtteranceEvent::javaobject> /* onTTSUtterance */)>("setOnTTSUtterance_cxx");
+    method(_javaPart, onTTSUtterance.has_value() ? JFunc_void_TTSUtteranceEvent_cxx::fromCpp(onTTSUtterance.value()) : nullptr);
+  }
+  std::optional<std::function<void(const std::string& /* error */)>> JHybridReadiumViewSpec::getOnTTSError() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JFunc_void_std__string::javaobject>()>("getOnTTSError_cxx");
+    auto __result = method(_javaPart);
+    return __result != nullptr ? std::make_optional([&]() -> std::function<void(const std::string& /* error */)> {
+      if (__result->isInstanceOf(JFunc_void_std__string_cxx::javaClassStatic())) [[likely]] {
+        auto downcast = jni::static_ref_cast<JFunc_void_std__string_cxx::javaobject>(__result);
+        return downcast->cthis()->getFunction();
+      } else {
+        auto __resultRef = jni::make_global(__result);
+        return JNICallable<JFunc_void_std__string, void(std::string)>(std::move(__resultRef));
+      }
+    }()) : std::nullopt;
+  }
+  void JHybridReadiumViewSpec::setOnTTSError(const std::optional<std::function<void(const std::string& /* error */)>>& onTTSError) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(jni::alias_ref<JFunc_void_std__string::javaobject> /* onTTSError */)>("setOnTTSError_cxx");
+    method(_javaPart, onTTSError.has_value() ? JFunc_void_std__string_cxx::fromCpp(onTTSError.value()) : nullptr);
+  }
 
   // Methods
   void JHybridReadiumViewSpec::goTo(const Locator& locator) {
@@ -315,6 +390,34 @@ namespace margelo::nitro::readium {
   }
   void JHybridReadiumViewSpec::destroy() {
     static const auto method = _javaPart->javaClassStatic()->getMethod<void()>("destroy");
+    method(_javaPart);
+  }
+  void JHybridReadiumViewSpec::ttsStart(const TTSConfig& config) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(jni::alias_ref<JTTSConfig> /* config */)>("ttsStart");
+    method(_javaPart, JTTSConfig::fromCpp(config));
+  }
+  void JHybridReadiumViewSpec::ttsStop() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void()>("ttsStop");
+    method(_javaPart);
+  }
+  void JHybridReadiumViewSpec::ttsPause() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void()>("ttsPause");
+    method(_javaPart);
+  }
+  void JHybridReadiumViewSpec::ttsResume() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void()>("ttsResume");
+    method(_javaPart);
+  }
+  void JHybridReadiumViewSpec::ttsSetRate(double rate) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void(double /* rate */)>("ttsSetRate");
+    method(_javaPart, rate);
+  }
+  void JHybridReadiumViewSpec::ttsSkipNext() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void()>("ttsSkipNext");
+    method(_javaPart);
+  }
+  void JHybridReadiumViewSpec::ttsSkipPrevious() {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<void()>("ttsSkipPrevious");
     method(_javaPart);
   }
 

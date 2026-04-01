@@ -50,6 +50,12 @@ abstract class HybridReadiumViewSpec: HybridView() {
   @set:Keep
   abstract var selectionActions: Array<SelectionAction>?
   
+  @get:DoNotStrip
+  @get:Keep
+  @set:DoNotStrip
+  @set:Keep
+  abstract var suppressNativeSelectionMenu: Boolean?
+  
   abstract var onLocationChange: ((locator: Locator) -> Unit)?
   
   private var onLocationChange_cxx: Func_void_Locator?
@@ -119,6 +125,48 @@ abstract class HybridReadiumViewSpec: HybridView() {
     set(value) {
       onSelectionAction = value?.let { it }
     }
+  
+  abstract var onTTSStateChange: ((state: TTSState) -> Unit)?
+  
+  private var onTTSStateChange_cxx: Func_void_TTSState?
+    @Keep
+    @DoNotStrip
+    get() {
+      return onTTSStateChange?.let { Func_void_TTSState_java(it) }
+    }
+    @Keep
+    @DoNotStrip
+    set(value) {
+      onTTSStateChange = value?.let { it }
+    }
+  
+  abstract var onTTSUtterance: ((event: TTSUtteranceEvent) -> Unit)?
+  
+  private var onTTSUtterance_cxx: Func_void_TTSUtteranceEvent?
+    @Keep
+    @DoNotStrip
+    get() {
+      return onTTSUtterance?.let { Func_void_TTSUtteranceEvent_java(it) }
+    }
+    @Keep
+    @DoNotStrip
+    set(value) {
+      onTTSUtterance = value?.let { it }
+    }
+  
+  abstract var onTTSError: ((error: String) -> Unit)?
+  
+  private var onTTSError_cxx: Func_void_std__string?
+    @Keep
+    @DoNotStrip
+    get() {
+      return onTTSError?.let { Func_void_std__string_java(it) }
+    }
+    @Keep
+    @DoNotStrip
+    set(value) {
+      onTTSError = value?.let { it }
+    }
 
   // Methods
   @DoNotStrip
@@ -136,6 +184,34 @@ abstract class HybridReadiumViewSpec: HybridView() {
   @DoNotStrip
   @Keep
   abstract fun destroy(): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun ttsStart(config: TTSConfig): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun ttsStop(): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun ttsPause(): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun ttsResume(): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun ttsSetRate(rate: Double): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun ttsSkipNext(): Unit
+  
+  @DoNotStrip
+  @Keep
+  abstract fun ttsSkipPrevious(): Unit
 
   // Default implementation of `HybridObject.toString()`
   override fun toString(): String {

@@ -8,11 +8,15 @@
     "preferences": true,
     "decorations": true,
     "selectionActions": true,
+    "suppressNativeSelectionMenu": true,
     "onLocationChange": true,
     "onPublicationReady": true,
     "onDecorationActivated": true,
     "onSelectionChange": true,
     "onSelectionAction": true,
+    "onTTSStateChange": true,
+    "onTTSUtterance": true,
+    "onTTSError": true,
     "hybridRef": true
   }
 }

@@ -56,6 +56,10 @@ namespace margelo::nitro::readium { struct SelectionEvent; }
 namespace margelo::nitro::readium { struct SeriesInfo; }
 // Forward declaration of `Subject` to properly resolve imports.
 namespace margelo::nitro::readium { struct Subject; }
+// Forward declaration of `TTSState` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSState; }
+// Forward declaration of `TTSUtteranceEvent` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSUtteranceEvent; }
 
 // Forward declarations of Swift defined types
 // Forward declaration of `HybridReadiumViewSpec_cxx` to properly resolve imports.
@@ -86,6 +90,8 @@ namespace NitroReadium { class HybridReadiumViewSpec_cxx; }
 #include "SelectionEvent.hpp"
 #include "SeriesInfo.hpp"
 #include "Subject.hpp"
+#include "TTSState.hpp"
+#include "TTSUtteranceEvent.hpp"
 #include <NitroModules/Result.hpp>
 #include <exception>
 #include <functional>
@@ -707,6 +713,117 @@ namespace margelo::nitro::readium::bridge::swift {
     return optional.has_value();
   }
   inline std::function<void(const SelectionActionEvent& /* event */)> get_std__optional_std__function_void_const_SelectionActionEvent_____event______(const std::optional<std::function<void(const SelectionActionEvent& /* event */)>>& optional) noexcept {
+    return optional.value();
+  }
+  
+  // pragma MARK: std::function<void(const TTSState& /* state */)>
+  /**
+   * Specialized version of `std::function<void(const TTSState&)>`.
+   */
+  using Func_void_TTSState = std::function<void(const TTSState& /* state */)>;
+  /**
+   * Wrapper class for a `std::function<void(const TTSState& / * state * /)>`, this can be used from Swift.
+   */
+  class Func_void_TTSState_Wrapper final {
+  public:
+    explicit Func_void_TTSState_Wrapper(std::function<void(const TTSState& /* state */)>&& func): _function(std::make_unique<std::function<void(const TTSState& /* state */)>>(std::move(func))) {}
+    inline void call(TTSState state) const noexcept {
+      _function->operator()(state);
+    }
+  private:
+    std::unique_ptr<std::function<void(const TTSState& /* state */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_TTSState create_Func_void_TTSState(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_TTSState_Wrapper wrap_Func_void_TTSState(Func_void_TTSState value) noexcept {
+    return Func_void_TTSState_Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::optional<std::function<void(const TTSState& /* state */)>>
+  /**
+   * Specialized version of `std::optional<std::function<void(const TTSState& / * state * /)>>`.
+   */
+  using std__optional_std__function_void_const_TTSState_____state______ = std::optional<std::function<void(const TTSState& /* state */)>>;
+  inline std::optional<std::function<void(const TTSState& /* state */)>> create_std__optional_std__function_void_const_TTSState_____state______(const std::function<void(const TTSState& /* state */)>& value) noexcept {
+    return std::optional<std::function<void(const TTSState& /* state */)>>(value);
+  }
+  inline bool has_value_std__optional_std__function_void_const_TTSState_____state______(const std::optional<std::function<void(const TTSState& /* state */)>>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline std::function<void(const TTSState& /* state */)> get_std__optional_std__function_void_const_TTSState_____state______(const std::optional<std::function<void(const TTSState& /* state */)>>& optional) noexcept {
+    return optional.value();
+  }
+  
+  // pragma MARK: std::function<void(const TTSUtteranceEvent& /* event */)>
+  /**
+   * Specialized version of `std::function<void(const TTSUtteranceEvent&)>`.
+   */
+  using Func_void_TTSUtteranceEvent = std::function<void(const TTSUtteranceEvent& /* event */)>;
+  /**
+   * Wrapper class for a `std::function<void(const TTSUtteranceEvent& / * event * /)>`, this can be used from Swift.
+   */
+  class Func_void_TTSUtteranceEvent_Wrapper final {
+  public:
+    explicit Func_void_TTSUtteranceEvent_Wrapper(std::function<void(const TTSUtteranceEvent& /* event */)>&& func): _function(std::make_unique<std::function<void(const TTSUtteranceEvent& /* event */)>>(std::move(func))) {}
+    inline void call(TTSUtteranceEvent event) const noexcept {
+      _function->operator()(event);
+    }
+  private:
+    std::unique_ptr<std::function<void(const TTSUtteranceEvent& /* event */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_TTSUtteranceEvent create_Func_void_TTSUtteranceEvent(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_TTSUtteranceEvent_Wrapper wrap_Func_void_TTSUtteranceEvent(Func_void_TTSUtteranceEvent value) noexcept {
+    return Func_void_TTSUtteranceEvent_Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>
+  /**
+   * Specialized version of `std::optional<std::function<void(const TTSUtteranceEvent& / * event * /)>>`.
+   */
+  using std__optional_std__function_void_const_TTSUtteranceEvent_____event______ = std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>;
+  inline std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>> create_std__optional_std__function_void_const_TTSUtteranceEvent_____event______(const std::function<void(const TTSUtteranceEvent& /* event */)>& value) noexcept {
+    return std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>(value);
+  }
+  inline bool has_value_std__optional_std__function_void_const_TTSUtteranceEvent_____event______(const std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline std::function<void(const TTSUtteranceEvent& /* event */)> get_std__optional_std__function_void_const_TTSUtteranceEvent_____event______(const std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>& optional) noexcept {
+    return optional.value();
+  }
+  
+  // pragma MARK: std::function<void(const std::string& /* error */)>
+  /**
+   * Specialized version of `std::function<void(const std::string&)>`.
+   */
+  using Func_void_std__string = std::function<void(const std::string& /* error */)>;
+  /**
+   * Wrapper class for a `std::function<void(const std::string& / * error * /)>`, this can be used from Swift.
+   */
+  class Func_void_std__string_Wrapper final {
+  public:
+    explicit Func_void_std__string_Wrapper(std::function<void(const std::string& /* error */)>&& func): _function(std::make_unique<std::function<void(const std::string& /* error */)>>(std::move(func))) {}
+    inline void call(std::string error) const noexcept {
+      _function->operator()(error);
+    }
+  private:
+    std::unique_ptr<std::function<void(const std::string& /* error */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_std__string create_Func_void_std__string(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_std__string_Wrapper wrap_Func_void_std__string(Func_void_std__string value) noexcept {
+    return Func_void_std__string_Wrapper(std::move(value));
+  }
+  
+  // pragma MARK: std::optional<std::function<void(const std::string& /* error */)>>
+  /**
+   * Specialized version of `std::optional<std::function<void(const std::string& / * error * /)>>`.
+   */
+  using std__optional_std__function_void_const_std__string_____error______ = std::optional<std::function<void(const std::string& /* error */)>>;
+  inline std::optional<std::function<void(const std::string& /* error */)>> create_std__optional_std__function_void_const_std__string_____error______(const std::function<void(const std::string& /* error */)>& value) noexcept {
+    return std::optional<std::function<void(const std::string& /* error */)>>(value);
+  }
+  inline bool has_value_std__optional_std__function_void_const_std__string_____error______(const std::optional<std::function<void(const std::string& /* error */)>>& optional) noexcept {
+    return optional.has_value();
+  }
+  inline std::function<void(const std::string& /* error */)> get_std__optional_std__function_void_const_std__string_____error______(const std::optional<std::function<void(const std::string& /* error */)>>& optional) noexcept {
     return optional.value();
   }
   

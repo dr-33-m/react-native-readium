@@ -97,11 +97,21 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
       updateSelectionActions()
     }
 
+  override var suppressNativeSelectionMenu: Boolean? = null
+    set(value) {
+      field = value
+      val frag = fragment as? EpubReaderFragment ?: return
+      frag.suppressNativeSelectionMenu = value ?: false
+    }
+
   override var onLocationChange: ((locator: Locator) -> Unit)? = null
   override var onPublicationReady: ((event: PublicationReadyEvent) -> Unit)? = null
   override var onDecorationActivated: ((event: DecorationActivatedEvent) -> Unit)? = null
   override var onSelectionChange: ((event: SelectionEvent) -> Unit)? = null
   override var onSelectionAction: ((event: SelectionActionEvent) -> Unit)? = null
+  override var onTTSStateChange: ((state: TTSState) -> Unit)? = null
+  override var onTTSUtterance: ((event: TTSUtteranceEvent) -> Unit)? = null
+  override var onTTSError: ((error: String) -> Unit)? = null
 
   private fun ensureService() {
     if (svc == null) {
@@ -116,8 +126,10 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
 
   private fun updatePreferences() {
     val prefs = preferences ?: return
-    val frag = fragment as? EpubReaderFragment ?: return
-    frag.updatePreferences(nitroPreferencesToEpub(prefs))
+    val frag = fragment ?: return
+    if (frag is EpubReaderFragment) {
+      frag.updatePreferences(nitroPreferencesToEpub(prefs))
+    }
   }
 
   // MARK: - Decorations
@@ -138,8 +150,11 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
 
   private fun updateSelectionActions() {
     val actions = selectionActions?.takeIf { it.isNotEmpty() } ?: return
-    val frag = fragment as? EpubReaderFragment ?: return
-    frag.updateSelectionActions(actions.map { FragmentSelectionAction(it.id, it.label) })
+    val frag = fragment ?: return
+    // Selection actions are only supported by EPUB navigator
+    if (frag is EpubReaderFragment) {
+      frag.updateSelectionActions(actions.map { FragmentSelectionAction(it.id, it.label) })
+    }
   }
 
   // MARK: - Imperative navigation
@@ -158,6 +173,21 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
 
   override fun goForward() { fragment?.goForward() }
   override fun goBackward() { fragment?.goBackward() }
+
+  // TTS methods
+  override fun ttsStart(config: TTSConfig) {
+    fragment?.ttsStart(
+      rate = config.rate?.toFloat(),
+      language = config.language,
+      voice = config.voice
+    )
+  }
+  override fun ttsStop() { fragment?.ttsStop() }
+  override fun ttsPause() { fragment?.ttsPause() }
+  override fun ttsResume() { fragment?.ttsResume() }
+  override fun ttsSetRate(rate: Double) { fragment?.ttsSetRate(rate.toFloat()) }
+  override fun ttsSkipNext() { fragment?.ttsSkipNext() }
+  override fun ttsSkipPrevious() { fragment?.ttsSkipPrevious() }
   override fun destroy() {
     if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
       cleanup()
@@ -232,7 +262,10 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
 
     isBuilding = true
 
-    val path = fileUrl.replace("^(file:/+)?(/.*)$".toRegex(), "$2")
+    // content:// SAF URIs are passed through as-is — AssetRetriever handles them
+    // via ContentResolver natively. Only file:// paths need the prefix stripped.
+    val path = if (fileUrl.startsWith("content://")) fileUrl
+               else fileUrl.replace("^(file:/+)?(/.*)$".toRegex(), "$2")
 
     val initialLocator = currentFile.initialLocation?.let { loc ->
       nitroLocatorToReadium(loc)?.let { com.reactnativereadium.utils.LinkOrLocator.Locator(it) }
@@ -247,6 +280,10 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
 
   private fun addFragment(frag: BaseReaderFragment) {
     if (isFragmentAdded) return
+    // Guard: do not commit a fragment if the hostView is already detached.
+    // This race can occur when openPublication's coroutine resumes after the
+    // view has been removed from the window (e.g. fast back navigation).
+    if (!hostView.isAttachedToWindow) return
 
     // Force-clear any stale instances whose hostViews are still in Fabric's
     // tree from a key-change remount.
@@ -267,12 +304,13 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
 
     hostView.id = View.generateViewId()
 
-    // Apply selection actions BEFORE committing so they're available
-    // during onCreate when the callback is conditionally registered.
-    selectionActions?.takeIf { it.isNotEmpty() }?.let { actions ->
-      if (frag is EpubReaderFragment) {
+    // Apply selection actions and selection-menu suppression BEFORE committing so they're
+    // available during onCreate when the navigator Configuration is built.
+    if (frag is EpubReaderFragment) {
+      selectionActions?.takeIf { it.isNotEmpty() }?.let { actions ->
         frag.updateSelectionActions(actions.map { FragmentSelectionAction(it.id, it.label) })
       }
+      frag.suppressNativeSelectionMenu = suppressNativeSelectionMenu ?: false
     }
 
     activity.supportFragmentManager
@@ -310,7 +348,8 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
           onPublicationReady?.invoke(PublicationReadyEvent(
             tableOfContents = flattenReadiumLinks(event.tableOfContents).toTypedArray(),
             positions = event.positions.map { readiumLocatorToNitro(it) }.toTypedArray(),
-            metadata = readiumMetadataToNitro(event.metadata)
+            metadata = readiumMetadataToNitro(event.metadata),
+            coverPath = event.coverPath
           ))
         }
         is ReaderViewModel.Event.DecorationActivated -> {
@@ -337,6 +376,24 @@ class HybridReadiumView(private val context: android.content.Context) : HybridRe
             selectedText = event.selectedText,
             actionId = event.actionId
           ))
+        }
+        is ReaderViewModel.Event.TTSStateChanged -> {
+          onTTSStateChange?.invoke(TTSState(
+            isPlaying = event.isPlaying,
+            isPaused = event.isPaused,
+            rate = event.rate.toDouble()
+          ))
+        }
+        is ReaderViewModel.Event.TTSUtterance -> {
+          onTTSUtterance?.invoke(TTSUtteranceEvent(
+            locator = readiumLocatorToNitro(event.locator),
+            utterance = event.utterance,
+            rangeStart = event.rangeStart?.toDouble(),
+            rangeLength = event.rangeLength?.toDouble()
+          ))
+        }
+        is ReaderViewModel.Event.TTSError -> {
+          onTTSError?.invoke(event.message)
         }
       }
     }

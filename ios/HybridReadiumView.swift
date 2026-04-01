@@ -15,6 +15,11 @@ class HybridReadiumView: HybridReadiumViewSpec {
   var file: ReadiumFile? = nil {
     didSet {
       guard let file = file else { return }
+      // If a different file is set while one is already loaded, tear down the current
+      // reader first so hasLoadedBook is reset and the new book can load cleanly.
+      if let oldUrl = oldValue?.url, oldUrl != file.url, hasLoadedBook {
+        cleanup()
+      }
       pendingFileUrl = file.url
       pendingInitialLocation = file.initialLocation
       tryLoadBook()
@@ -45,6 +50,9 @@ class HybridReadiumView: HybridReadiumViewSpec {
   var onDecorationActivated: ((DecorationActivatedEvent) -> Void)? = nil
   var onSelectionChange: ((SelectionEvent) -> Void)? = nil
   var onSelectionAction: ((SelectionActionEvent) -> Void)? = nil
+  var onTTSStateChange: ((TTSState) -> Void)? = nil
+  var onTTSUtterance: ((TTSUtteranceEvent) -> Void)? = nil
+  var onTTSError: ((String) -> Void)? = nil
 
   // MARK: - Private state
 
@@ -113,11 +121,14 @@ class HybridReadiumView: HybridReadiumViewSpec {
 
   private func updatePreferences() {
     guard readerViewController != nil else { return }
-    guard let navigator = readerViewController?.navigator as? EPUBNavigatorViewController else { return }
     guard let prefs = preferences else { return }
 
-    let epubPrefs = nitroPreferencesToEPUB(prefs)
-    navigator.submitPreferences(epubPrefs)
+    if let navigator = readerViewController?.navigator as? EPUBNavigatorViewController {
+      let epubPrefs = nitroPreferencesToEPUB(prefs)
+      navigator.submitPreferences(epubPrefs)
+    } else if let pdfVC = readerViewController as? PDFViewController {
+      pdfVC.updatePreferences(prefs)
+    }
   }
 
   // MARK: - Decorations
@@ -198,7 +209,6 @@ class HybridReadiumView: HybridReadiumViewSpec {
     viewController!.addChild(readerViewController!)
     let rootView = readerViewController!.view!
     hostView.addSubview(rootView)
-    viewController!.addChild(readerViewController!)
     readerViewController!.didMove(toParent: viewController!)
 
     rootView.translatesAutoresizingMaskIntoConstraints = false
@@ -231,10 +241,27 @@ class HybridReadiumView: HybridReadiumViewSpec {
 
       let metadata = readiumMetadataToNitro(vc.publication.metadata)
 
+      // Extract cover image (works for both EPUB and PDF via Readium's built-in CoverService)
+      var coverPath: String? = nil
+      let coverImage = await vc.publication.cover
+      if let image = coverImage {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let coversDir = docs.appendingPathComponent("covers")
+        try? FileManager.default.createDirectory(at: coversDir, withIntermediateDirectories: true)
+        let bookId = URL(string: vc.bookId)?.deletingPathExtension().lastPathComponent
+          ?? URL(fileURLWithPath: vc.bookId).deletingPathExtension().lastPathComponent
+        let coverFile = coversDir.appendingPathComponent("\(bookId).jpg")
+        if let data = image.jpegData(compressionQuality: 0.9) {
+          try? data.write(to: coverFile)
+          coverPath = coverFile.path
+        }
+      }
+
       let event = PublicationReadyEvent(
         tableOfContents: tocLinks,
         positions: positions,
-        metadata: metadata
+        metadata: metadata,
+        coverPath: coverPath
       )
 
       self.onPublicationReady?(event)
@@ -276,9 +303,57 @@ class HybridReadiumView: HybridReadiumViewSpec {
     }
   }
 
+  // MARK: - TTS
+
+  private func ensureTTSManager() -> TTSManager? {
+    guard let vc = readerViewController else { return nil }
+
+    if vc.ttsManager == nil {
+      let manager = TTSManager(publication: vc.publication)
+      manager.onStateChange = { [weak self] isPlaying, isPaused, rate in
+        self?.onTTSStateChange?(TTSState(
+          isPlaying: isPlaying,
+          isPaused: isPaused,
+          rate: Double(rate)
+        ))
+      }
+      manager.onUtterance = { [weak self] locator, text in
+        self?.onTTSUtterance?(TTSUtteranceEvent(
+          locator: readiumLocatorToNitro(locator),
+          utterance: text,
+          rangeStart: nil,
+          rangeLength: nil
+        ))
+      }
+      manager.onError = { [weak self] message in
+        self?.onTTSError?(message)
+      }
+      vc.ttsManager = manager
+    }
+    return vc.ttsManager
+  }
+
+  func ttsStart(config: TTSConfig) {
+    guard let manager = ensureTTSManager() else { return }
+    manager.start(
+      rate: config.rate.map { Float($0) },
+      language: config.language,
+      voice: config.voice,
+      fromLocator: nil
+    )
+  }
+
+  func ttsStop() { readerViewController?.ttsManager?.stop() }
+  func ttsPause() { readerViewController?.ttsManager?.pause() }
+  func ttsResume() { readerViewController?.ttsManager?.resume() }
+  func ttsSetRate(rate: Double) { readerViewController?.ttsManager?.setRate(Float(rate)) }
+  func ttsSkipNext() { readerViewController?.ttsManager?.skipNext() }
+  func ttsSkipPrevious() { readerViewController?.ttsManager?.skipPrevious() }
+
   // Cleanup
   func cleanup() {
     guard let vc = readerViewController else { return }
+    vc.ttsManager?.cleanup()
     readerViewController = nil
 
     vc.willMove(toParent: nil)
@@ -292,6 +367,7 @@ class HybridReadiumView: HybridReadiumViewSpec {
     }
     subscriptions = Set<AnyCancellable>()
     activeDecorationGroups.removeAll()
+    hasLoadedBook = false
   }
 }
 

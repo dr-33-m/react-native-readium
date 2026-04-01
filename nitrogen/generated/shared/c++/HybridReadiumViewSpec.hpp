@@ -31,6 +31,12 @@ namespace margelo::nitro::readium { struct DecorationActivatedEvent; }
 namespace margelo::nitro::readium { struct SelectionEvent; }
 // Forward declaration of `SelectionActionEvent` to properly resolve imports.
 namespace margelo::nitro::readium { struct SelectionActionEvent; }
+// Forward declaration of `TTSState` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSState; }
+// Forward declaration of `TTSUtteranceEvent` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSUtteranceEvent; }
+// Forward declaration of `TTSConfig` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSConfig; }
 
 #include "ReadiumFile.hpp"
 #include <optional>
@@ -44,6 +50,10 @@ namespace margelo::nitro::readium { struct SelectionActionEvent; }
 #include "DecorationActivatedEvent.hpp"
 #include "SelectionEvent.hpp"
 #include "SelectionActionEvent.hpp"
+#include "TTSState.hpp"
+#include "TTSUtteranceEvent.hpp"
+#include <string>
+#include "TTSConfig.hpp"
 
 namespace margelo::nitro::readium {
 
@@ -80,6 +90,8 @@ namespace margelo::nitro::readium {
       virtual void setDecorations(const std::optional<std::vector<DecorationGroup>>& decorations) = 0;
       virtual std::optional<std::vector<SelectionAction>> getSelectionActions() = 0;
       virtual void setSelectionActions(const std::optional<std::vector<SelectionAction>>& selectionActions) = 0;
+      virtual std::optional<bool> getSuppressNativeSelectionMenu() = 0;
+      virtual void setSuppressNativeSelectionMenu(std::optional<bool> suppressNativeSelectionMenu) = 0;
       virtual std::optional<std::function<void(const Locator& /* locator */)>> getOnLocationChange() = 0;
       virtual void setOnLocationChange(const std::optional<std::function<void(const Locator& /* locator */)>>& onLocationChange) = 0;
       virtual std::optional<std::function<void(const PublicationReadyEvent& /* event */)>> getOnPublicationReady() = 0;
@@ -90,6 +102,12 @@ namespace margelo::nitro::readium {
       virtual void setOnSelectionChange(const std::optional<std::function<void(const SelectionEvent& /* event */)>>& onSelectionChange) = 0;
       virtual std::optional<std::function<void(const SelectionActionEvent& /* event */)>> getOnSelectionAction() = 0;
       virtual void setOnSelectionAction(const std::optional<std::function<void(const SelectionActionEvent& /* event */)>>& onSelectionAction) = 0;
+      virtual std::optional<std::function<void(const TTSState& /* state */)>> getOnTTSStateChange() = 0;
+      virtual void setOnTTSStateChange(const std::optional<std::function<void(const TTSState& /* state */)>>& onTTSStateChange) = 0;
+      virtual std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>> getOnTTSUtterance() = 0;
+      virtual void setOnTTSUtterance(const std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>& onTTSUtterance) = 0;
+      virtual std::optional<std::function<void(const std::string& /* error */)>> getOnTTSError() = 0;
+      virtual void setOnTTSError(const std::optional<std::function<void(const std::string& /* error */)>>& onTTSError) = 0;
 
     public:
       // Methods
@@ -97,6 +115,13 @@ namespace margelo::nitro::readium {
       virtual void goForward() = 0;
       virtual void goBackward() = 0;
       virtual void destroy() = 0;
+      virtual void ttsStart(const TTSConfig& config) = 0;
+      virtual void ttsStop() = 0;
+      virtual void ttsPause() = 0;
+      virtual void ttsResume() = 0;
+      virtual void ttsSetRate(double rate) = 0;
+      virtual void ttsSkipNext() = 0;
+      virtual void ttsSkipPrevious() = 0;
 
     protected:
       // Hybrid Setup

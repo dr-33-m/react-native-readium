@@ -14,6 +14,7 @@ class ReaderViewController: UIViewController, Loggable {
   let navigator: UIViewController & Navigator
   let publication: Publication
   let bookId: String
+  var ttsManager: TTSManager?
 
   private(set) var stackView: UIStackView!
   private lazy var positionLabel = UILabel()
@@ -60,6 +61,7 @@ class ReaderViewController: UIViewController, Loggable {
     NotificationCenter.default.removeObserver(self)
     positionsLoadingTask?.cancel()
     removeNavigatorInputObservers()
+    ttsManager?.cleanup()
   }
 
   override func viewDidLoad() {

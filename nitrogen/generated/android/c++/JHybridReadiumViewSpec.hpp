@@ -58,6 +58,8 @@ namespace margelo::nitro::readium {
     void setDecorations(const std::optional<std::vector<DecorationGroup>>& decorations) override;
     std::optional<std::vector<SelectionAction>> getSelectionActions() override;
     void setSelectionActions(const std::optional<std::vector<SelectionAction>>& selectionActions) override;
+    std::optional<bool> getSuppressNativeSelectionMenu() override;
+    void setSuppressNativeSelectionMenu(std::optional<bool> suppressNativeSelectionMenu) override;
     std::optional<std::function<void(const Locator& /* locator */)>> getOnLocationChange() override;
     void setOnLocationChange(const std::optional<std::function<void(const Locator& /* locator */)>>& onLocationChange) override;
     std::optional<std::function<void(const PublicationReadyEvent& /* event */)>> getOnPublicationReady() override;
@@ -68,6 +70,12 @@ namespace margelo::nitro::readium {
     void setOnSelectionChange(const std::optional<std::function<void(const SelectionEvent& /* event */)>>& onSelectionChange) override;
     std::optional<std::function<void(const SelectionActionEvent& /* event */)>> getOnSelectionAction() override;
     void setOnSelectionAction(const std::optional<std::function<void(const SelectionActionEvent& /* event */)>>& onSelectionAction) override;
+    std::optional<std::function<void(const TTSState& /* state */)>> getOnTTSStateChange() override;
+    void setOnTTSStateChange(const std::optional<std::function<void(const TTSState& /* state */)>>& onTTSStateChange) override;
+    std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>> getOnTTSUtterance() override;
+    void setOnTTSUtterance(const std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>& onTTSUtterance) override;
+    std::optional<std::function<void(const std::string& /* error */)>> getOnTTSError() override;
+    void setOnTTSError(const std::optional<std::function<void(const std::string& /* error */)>>& onTTSError) override;
 
   public:
     // Methods
@@ -75,6 +83,13 @@ namespace margelo::nitro::readium {
     void goForward() override;
     void goBackward() override;
     void destroy() override;
+    void ttsStart(const TTSConfig& config) override;
+    void ttsStop() override;
+    void ttsPause() override;
+    void ttsResume() override;
+    void ttsSetRate(double rate) override;
+    void ttsSkipNext() override;
+    void ttsSkipPrevious() override;
 
   private:
     jni::global_ref<JHybridReadiumViewSpec::JavaPart> _javaPart;

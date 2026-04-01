@@ -28,6 +28,9 @@
 #include "DecorationActivatedEvent.hpp"
 #include "SelectionEvent.hpp"
 #include "SelectionActionEvent.hpp"
+#include "TTSState.hpp"
+#include "TTSUtteranceEvent.hpp"
+#include <string>
 #include <memory>
 #include "HybridReadiumViewSpec.hpp"
 
@@ -55,11 +58,15 @@ namespace margelo::nitro::readium::views {
     CachedProp<std::optional<Preferences>> preferences;
     CachedProp<std::optional<std::vector<DecorationGroup>>> decorations;
     CachedProp<std::optional<std::vector<SelectionAction>>> selectionActions;
+    CachedProp<std::optional<bool>> suppressNativeSelectionMenu;
     CachedProp<std::optional<std::function<void(const Locator& /* locator */)>>> onLocationChange;
     CachedProp<std::optional<std::function<void(const PublicationReadyEvent& /* event */)>>> onPublicationReady;
     CachedProp<std::optional<std::function<void(const DecorationActivatedEvent& /* event */)>>> onDecorationActivated;
     CachedProp<std::optional<std::function<void(const SelectionEvent& /* event */)>>> onSelectionChange;
     CachedProp<std::optional<std::function<void(const SelectionActionEvent& /* event */)>>> onSelectionAction;
+    CachedProp<std::optional<std::function<void(const TTSState& /* state */)>>> onTTSStateChange;
+    CachedProp<std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>> onTTSUtterance;
+    CachedProp<std::optional<std::function<void(const std::string& /* error */)>>> onTTSError;
     CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridReadiumViewSpec>& /* ref */)>>> hybridRef;
 
   private:

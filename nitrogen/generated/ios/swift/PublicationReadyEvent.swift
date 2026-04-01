@@ -18,7 +18,7 @@ public extension PublicationReadyEvent {
   /**
    * Create a new instance of `PublicationReadyEvent`.
    */
-  init(tableOfContents: [Link], positions: [Locator], metadata: PublicationMetadata) {
+  init(tableOfContents: [Link], positions: [Locator], metadata: PublicationMetadata, coverPath: String?) {
     self.init({ () -> bridge.std__vector_Link_ in
       var __vector = bridge.create_std__vector_Link_(tableOfContents.count)
       for __item in tableOfContents {
@@ -31,7 +31,13 @@ public extension PublicationReadyEvent {
         __vector.push_back(__item)
       }
       return __vector
-    }(), metadata)
+    }(), metadata, { () -> bridge.std__optional_std__string_ in
+      if let __unwrappedValue = coverPath {
+        return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+      } else {
+        return .init()
+      }
+    }())
   }
 
   @inline(__always)
@@ -47,5 +53,17 @@ public extension PublicationReadyEvent {
   @inline(__always)
   var metadata: PublicationMetadata {
     return self.__metadata
+  }
+  
+  @inline(__always)
+  var coverPath: String? {
+    return { () -> String? in
+      if bridge.has_value_std__optional_std__string_(self.__coverPath) {
+        let __unwrapped = bridge.get_std__optional_std__string_(self.__coverPath)
+        return String(__unwrapped)
+      } else {
+        return nil
+      }
+    }()
   }
 }

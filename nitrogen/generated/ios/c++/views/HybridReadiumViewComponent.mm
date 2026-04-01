@@ -92,6 +92,11 @@ using namespace margelo::nitro::readium::views;
     swiftPart.setSelectionActions(newViewProps.selectionActions.value);
     newViewProps.selectionActions.isDirty = false;
   }
+  // suppressNativeSelectionMenu: optional
+  if (newViewProps.suppressNativeSelectionMenu.isDirty) {
+    swiftPart.setSuppressNativeSelectionMenu(newViewProps.suppressNativeSelectionMenu.value);
+    newViewProps.suppressNativeSelectionMenu.isDirty = false;
+  }
   // onLocationChange: optional
   if (newViewProps.onLocationChange.isDirty) {
     swiftPart.setOnLocationChange(newViewProps.onLocationChange.value);
@@ -116,6 +121,21 @@ using namespace margelo::nitro::readium::views;
   if (newViewProps.onSelectionAction.isDirty) {
     swiftPart.setOnSelectionAction(newViewProps.onSelectionAction.value);
     newViewProps.onSelectionAction.isDirty = false;
+  }
+  // onTTSStateChange: optional
+  if (newViewProps.onTTSStateChange.isDirty) {
+    swiftPart.setOnTTSStateChange(newViewProps.onTTSStateChange.value);
+    newViewProps.onTTSStateChange.isDirty = false;
+  }
+  // onTTSUtterance: optional
+  if (newViewProps.onTTSUtterance.isDirty) {
+    swiftPart.setOnTTSUtterance(newViewProps.onTTSUtterance.value);
+    newViewProps.onTTSUtterance.isDirty = false;
+  }
+  // onTTSError: optional
+  if (newViewProps.onTTSError.isDirty) {
+    swiftPart.setOnTTSError(newViewProps.onTTSError.value);
+    newViewProps.onTTSError.isDirty = false;
   }
 
   swiftPart.afterUpdate();

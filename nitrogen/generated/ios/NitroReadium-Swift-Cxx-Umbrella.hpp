@@ -56,6 +56,12 @@ namespace margelo::nitro::readium { struct SelectionEvent; }
 namespace margelo::nitro::readium { struct SeriesInfo; }
 // Forward declaration of `Subject` to properly resolve imports.
 namespace margelo::nitro::readium { struct Subject; }
+// Forward declaration of `TTSConfig` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSConfig; }
+// Forward declaration of `TTSState` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSState; }
+// Forward declaration of `TTSUtteranceEvent` to properly resolve imports.
+namespace margelo::nitro::readium { struct TTSUtteranceEvent; }
 
 // Include C++ defined types
 #include "Accessibility.hpp"
@@ -82,6 +88,9 @@ namespace margelo::nitro::readium { struct Subject; }
 #include "SelectionEvent.hpp"
 #include "SeriesInfo.hpp"
 #include "Subject.hpp"
+#include "TTSConfig.hpp"
+#include "TTSState.hpp"
+#include "TTSUtteranceEvent.hpp"
 #include <NitroModules/Result.hpp>
 #include <exception>
 #include <functional>

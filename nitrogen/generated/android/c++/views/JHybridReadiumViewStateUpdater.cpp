@@ -53,6 +53,10 @@ void JHybridReadiumViewStateUpdater::updateViewProps(jni::alias_ref<jni::JClass>
     hybridView->setSelectionActions(props->selectionActions.value);
     props->selectionActions.isDirty = false;
   }
+  if (props->suppressNativeSelectionMenu.isDirty) {
+    hybridView->setSuppressNativeSelectionMenu(props->suppressNativeSelectionMenu.value);
+    props->suppressNativeSelectionMenu.isDirty = false;
+  }
   if (props->onLocationChange.isDirty) {
     hybridView->setOnLocationChange(props->onLocationChange.value);
     props->onLocationChange.isDirty = false;
@@ -72,6 +76,18 @@ void JHybridReadiumViewStateUpdater::updateViewProps(jni::alias_ref<jni::JClass>
   if (props->onSelectionAction.isDirty) {
     hybridView->setOnSelectionAction(props->onSelectionAction.value);
     props->onSelectionAction.isDirty = false;
+  }
+  if (props->onTTSStateChange.isDirty) {
+    hybridView->setOnTTSStateChange(props->onTTSStateChange.value);
+    props->onTTSStateChange.isDirty = false;
+  }
+  if (props->onTTSUtterance.isDirty) {
+    hybridView->setOnTTSUtterance(props->onTTSUtterance.value);
+    props->onTTSUtterance.isDirty = false;
+  }
+  if (props->onTTSError.isDirty) {
+    hybridView->setOnTTSError(props->onTTSError.value);
+    props->onTTSError.isDirty = false;
   }
 
   // Update hybridRef if it changed

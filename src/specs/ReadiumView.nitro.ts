@@ -197,6 +197,7 @@ export interface PublicationReadyEvent {
   tableOfContents: Link[];
   positions: Locator[];
   metadata: PublicationMetadata;
+  coverPath?: string;
 }
 
 export interface DecorationActivatedEvent {
@@ -217,6 +218,27 @@ export interface SelectionActionEvent {
   actionId: string;
 }
 
+// ── TTS (Text-to-Speech) ────────────────────────────────────────────────────
+
+export interface TTSConfig {
+  rate?: number;
+  language?: string;
+  voice?: string;
+}
+
+export interface TTSState {
+  isPlaying: boolean;
+  isPaused: boolean;
+  rate: number;
+}
+
+export interface TTSUtteranceEvent {
+  locator: Locator;
+  utterance: string;
+  rangeStart?: number;
+  rangeLength?: number;
+}
+
 // ── File ─────────────────────────────────────────────────────────────────────
 
 export interface ReadiumFile {
@@ -231,11 +253,15 @@ export interface ReadiumViewProps extends HybridViewProps {
   preferences?: Preferences;
   decorations?: DecorationGroup[];
   selectionActions?: SelectionAction[];
+  suppressNativeSelectionMenu?: boolean;
   onLocationChange?: (locator: Locator) => void;
   onPublicationReady?: (event: PublicationReadyEvent) => void;
   onDecorationActivated?: (event: DecorationActivatedEvent) => void;
   onSelectionChange?: (event: SelectionEvent) => void;
   onSelectionAction?: (event: SelectionActionEvent) => void;
+  onTTSStateChange?: (state: TTSState) => void;
+  onTTSUtterance?: (event: TTSUtteranceEvent) => void;
+  onTTSError?: (error: string) => void;
 }
 
 export interface ReadiumViewMethods extends HybridViewMethods {
@@ -243,6 +269,13 @@ export interface ReadiumViewMethods extends HybridViewMethods {
   goForward(): void;
   goBackward(): void;
   destroy(): void;
+  ttsStart(config: TTSConfig): void;
+  ttsStop(): void;
+  ttsPause(): void;
+  ttsResume(): void;
+  ttsSetRate(rate: number): void;
+  ttsSkipNext(): void;
+  ttsSkipPrevious(): void;
 }
 
 export type ReadiumView = HybridView<ReadiumViewProps, ReadiumViewMethods>;

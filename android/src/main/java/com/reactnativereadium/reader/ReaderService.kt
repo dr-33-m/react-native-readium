@@ -1,5 +1,7 @@
 package com.reactnativereadium.reader
 
+import android.net.Uri
+import android.provider.OpenableColumns
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.util.RNLog
 import com.reactnativereadium.utils.LinkOrLocator
@@ -7,10 +9,12 @@ import java.io.File
 import java.util.Locale
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.FileExtension
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.format.FormatHints
 import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.toAbsoluteUrl
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
@@ -57,25 +61,39 @@ class ReaderService(
     initialLocation: LinkOrLocator?,
     callback: suspend (fragment: BaseReaderFragment) -> Unit
   ) {
-    val publicationFile = File(fileName).absoluteFile
-    if (!publicationFile.exists()) {
-      RNLog.e(reactContext, "Failed to open publication: File does not exist: $fileName")
-      return
-    }
-    val publicationUrl = runCatching {
-      publicationFile.toUrl()
-    }
-      .onFailure {
-        RNLog.e(
-          reactContext,
-          "Invalid publication path: $fileName - ${it.message}"
-        )
-      }
-      .getOrNull()
-      ?: return
+    val publicationUrl: AbsoluteUrl
+    val bookId: String
+    val fileExtension: String?
 
-    val fileExtension = publicationFile.extension
-      .takeIf { it.isNotEmpty() }?.lowercase(Locale.ROOT)
+    if (fileName.startsWith("content://")) {
+      val androidUri = Uri.parse(fileName)
+      publicationUrl = androidUri.toAbsoluteUrl() ?: run {
+        RNLog.e(reactContext, "Invalid content URI: $fileName")
+        return
+      }
+      val displayName = reactContext.contentResolver.query(
+        androidUri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null
+      )?.use { cursor ->
+        if (cursor.moveToFirst()) cursor.getString(0) else null
+      } ?: fileName.substringAfterLast('/')
+      bookId = displayName.substringBeforeLast('.')
+      fileExtension = displayName.substringAfterLast('.', "").lowercase(Locale.ROOT).takeIf { it.isNotEmpty() }
+    } else {
+      val publicationFile = File(fileName).absoluteFile
+      if (!publicationFile.exists()) {
+        RNLog.e(reactContext, "Failed to open publication: File does not exist: $fileName")
+        return
+      }
+      publicationUrl = runCatching { publicationFile.toUrl() }
+        .onFailure { RNLog.e(reactContext, "Invalid publication path: $fileName - ${it.message}") }
+        .getOrNull()
+        ?.let { it as? AbsoluteUrl } ?: run {
+          RNLog.e(reactContext, "Could not convert file path to AbsoluteUrl: $fileName")
+          return
+        }
+      bookId = publicationFile.nameWithoutExtension
+      fileExtension = publicationFile.extension.takeIf { it.isNotEmpty() }?.lowercase(Locale.ROOT)
+    }
 
     val asset = assetRetriever
       .retrieve(
@@ -95,8 +113,13 @@ class ReaderService(
       )
       .onSuccess {
         val locator = locatorFromLinkOrLocator(initialLocation, it)
-        val readerFragment = EpubReaderFragment.newInstance()
-        readerFragment.initFactory(it, locator)
+        if (!it.conformsTo(Publication.Profile.EPUB)) {
+          RNLog.w(reactContext, "Unsupported publication format")
+          return@onSuccess
+        }
+        val readerFragment = EpubReaderFragment.newInstance().also { frag ->
+          frag.initFactory(it, locator, bookId)
+        }
         callback.invoke(readerFragment)
       }
       .onFailure {

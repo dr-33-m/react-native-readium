@@ -15,23 +15,27 @@ import org.readium.r2.shared.publication.Metadata
 
 class ReaderViewModel(
   val publication: Publication,
-  val initialLocation: Locator?
+  val initialLocation: Locator?,
+  val bookId: String
 ) : ViewModel() {
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
 
     class Factory(
       private val publication: Publication,
-      private val initialLocation: Locator?
+      private val initialLocation: Locator?,
+      private val bookId: String
     ) : ViewModelProvider.NewInstanceFactory() {
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
             modelClass
               .getDeclaredConstructor(
                 Publication::class.java,
-                Locator::class.java
+                Locator::class.java,
+                String::class.java
               )
               .newInstance(
                 publication,
-                initialLocation
+                initialLocation,
+                bookId
               )
     }
 
@@ -40,7 +44,8 @@ class ReaderViewModel(
         class PublicationReady(
             val tableOfContents: List<Link>,
             val positions: List<Locator>,
-            val metadata: Metadata
+            val metadata: Metadata,
+            val coverPath: String?
         ) : Event()
         class DecorationActivated(
             val decoration: Decoration,
@@ -57,5 +62,17 @@ class ReaderViewModel(
             val locator: Locator,
             val selectedText: String
         ) : Event()
+        class TTSStateChanged(
+            val isPlaying: Boolean,
+            val isPaused: Boolean,
+            val rate: Float
+        ) : Event()
+        class TTSUtterance(
+            val locator: Locator,
+            val utterance: String,
+            val rangeStart: Int?,
+            val rangeLength: Int?
+        ) : Event()
+        class TTSError(val message: String) : Event()
     }
 }

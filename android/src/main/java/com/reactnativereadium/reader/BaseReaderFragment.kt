@@ -1,5 +1,7 @@
 package com.reactnativereadium.reader
 
+import android.app.Application
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -16,8 +18,12 @@ import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.SelectableNavigator
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.publication.services.positions
+import java.io.File
+import java.io.FileOutputStream
 
 /*
  * Base reader fragment class
@@ -32,6 +38,9 @@ abstract class BaseReaderFragment : Fragment() {
 
   protected abstract val model: ReaderViewModel
   protected abstract val navigator: Navigator
+
+  // TTS
+  private var ttsManager: TTSManager? = null
 
   // Track active decoration listeners to avoid duplicates
   private val activeDecorationGroups = mutableSetOf<String>()
@@ -63,18 +72,30 @@ abstract class BaseReaderFragment : Fragment() {
 
     // Emit PublicationReady event with all metadata
     viewScope.launch {
-      // positions() is a suspending function that returns List<Locator>
       val positions = try {
         model.publication.positions()
       } catch (e: Exception) {
         emptyList<Locator>()
       }
 
+      val coverPath: String? = try {
+        val bitmap = model.publication.cover()
+        if (bitmap != null) {
+          val coversDir = File(requireContext().filesDir, "covers").also { it.mkdirs() }
+          val coverFile = File(coversDir, "${model.bookId}.jpg")
+          FileOutputStream(coverFile).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+          "file://${coverFile.absolutePath}"
+        } else null
+      } catch (e: Exception) {
+        null
+      }
+
       channel.send(
         ReaderViewModel.Event.PublicationReady(
           tableOfContents = model.publication.tableOfContents,
           positions = positions,
-          metadata = model.publication.metadata
+          metadata = model.publication.metadata,
+          coverPath = coverPath
         )
       )
     }
@@ -200,28 +221,58 @@ abstract class BaseReaderFragment : Fragment() {
     })
   }
 
-  /**
-   * Get the current text selection from the navigator
-   * Returns the selection locator which includes text position information needed for highlighting
-   */
-  suspend fun getCurrentSelection(): Locator? {
-    if (!isNavigatorReady) {
-      android.util.Log.w("BaseReaderFragment", "Navigator not initialized yet")
-      return null
-    }
+  // MARK: - TTS
 
-    val selectableNavigator = navigator as? SelectableNavigator
-    if (selectableNavigator == null) {
-      android.util.Log.w("BaseReaderFragment", "Navigator does not support text selection")
-      return null
+  fun ttsStart(rate: Float?, language: String?, voice: String?) {
+    val viewScope = viewLifecycleOwner.lifecycleScope
+    if (ttsManager == null) {
+      val app = requireActivity().application
+      ttsManager = TTSManager(
+        application = app,
+        publication = model.publication,
+        scope = viewScope,
+        onStateChange = { isPlaying, isPaused, r ->
+          viewScope.launch {
+            channel.send(ReaderViewModel.Event.TTSStateChanged(isPlaying, isPaused, r))
+          }
+        },
+        onUtterance = { locator, text ->
+          viewScope.launch {
+            channel.send(ReaderViewModel.Event.TTSUtterance(locator, text, null, null))
+          }
+        },
+        onError = { message ->
+          viewScope.launch {
+            channel.send(ReaderViewModel.Event.TTSError(message))
+          }
+        }
+      )
     }
-
-    val selection = selectableNavigator.currentSelection()
-    if (selection == null) {
-      return null
+    viewScope.launch {
+      // Wait for the EPUB navigator to finish navigating to initialLocation
+      // before reading the visible element locator. Without this delay,
+      // currentLocator may still point to the resource start when the book
+      // is first opened from a saved position.
+      if (ttsManager?.isRunning() != true) delay(400)
+      val startLocator = if (isNavigatorReady) {
+        (navigator as? VisualNavigator)?.firstVisibleElementLocator()
+          ?: navigator.currentLocator.value
+      } else null
+      ttsManager?.start(rate = rate, language = language, voice = voice, fromLocator = startLocator)
     }
+  }
 
-    return selection.locator
+  fun ttsStop() { ttsManager?.stop() }
+  fun ttsPause() { ttsManager?.pause() }
+  fun ttsResume() { ttsManager?.resume() }
+  fun ttsSetRate(rate: Float) { ttsManager?.setRate(rate) }
+  fun ttsSkipNext() { ttsManager?.skipNext() }
+  fun ttsSkipPrevious() { ttsManager?.skipPrevious() }
+
+  override fun onDestroyView() {
+    ttsManager?.cleanup()
+    ttsManager = null
+    super.onDestroyView()
   }
 
   /**

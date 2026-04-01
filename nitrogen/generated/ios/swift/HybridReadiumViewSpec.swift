@@ -14,17 +14,28 @@ public protocol HybridReadiumViewSpec_protocol: HybridObject, HybridView {
   var preferences: Preferences? { get set }
   var decorations: [DecorationGroup]? { get set }
   var selectionActions: [SelectionAction]? { get set }
+  var suppressNativeSelectionMenu: Bool? { get set }
   var onLocationChange: ((_ locator: Locator) -> Void)? { get set }
   var onPublicationReady: ((_ event: PublicationReadyEvent) -> Void)? { get set }
   var onDecorationActivated: ((_ event: DecorationActivatedEvent) -> Void)? { get set }
   var onSelectionChange: ((_ event: SelectionEvent) -> Void)? { get set }
   var onSelectionAction: ((_ event: SelectionActionEvent) -> Void)? { get set }
+  var onTTSStateChange: ((_ state: TTSState) -> Void)? { get set }
+  var onTTSUtterance: ((_ event: TTSUtteranceEvent) -> Void)? { get set }
+  var onTTSError: ((_ error: String) -> Void)? { get set }
 
   // Methods
   func goTo(locator: Locator) throws -> Void
   func goForward() throws -> Void
   func goBackward() throws -> Void
   func destroy() throws -> Void
+  func ttsStart(config: TTSConfig) throws -> Void
+  func ttsStop() throws -> Void
+  func ttsPause() throws -> Void
+  func ttsResume() throws -> Void
+  func ttsSetRate(rate: Double) throws -> Void
+  func ttsSkipNext() throws -> Void
+  func ttsSkipPrevious() throws -> Void
 }
 
 public extension HybridReadiumViewSpec_protocol {

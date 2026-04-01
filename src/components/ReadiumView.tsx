@@ -24,6 +24,9 @@ export const ReadiumView = forwardRef<ReadiumViewRef, ReadiumProps>(
       onDecorationActivated,
       onSelectionChange,
       onSelectionAction,
+      onTTSStateChange,
+      onTTSUtterance,
+      onTTSError,
       preferences,
       decorations,
       selectionActions,
@@ -70,6 +73,13 @@ export const ReadiumView = forwardRef<ReadiumViewRef, ReadiumProps>(
         goTo: (locator) => hybridRef.current?.goTo(locator),
         goForward: () => hybridRef.current?.goForward(),
         goBackward: () => hybridRef.current?.goBackward(),
+        ttsStart: (config) => hybridRef.current?.ttsStart(config ?? {}),
+        ttsStop: () => hybridRef.current?.ttsStop(),
+        ttsPause: () => hybridRef.current?.ttsPause(),
+        ttsResume: () => hybridRef.current?.ttsResume(),
+        ttsSetRate: (rate) => hybridRef.current?.ttsSetRate(rate),
+        ttsSkipNext: () => hybridRef.current?.ttsSkipNext(),
+        ttsSkipPrevious: () => hybridRef.current?.ttsSkipPrevious(),
       }),
       []
     );
@@ -96,6 +106,9 @@ export const ReadiumView = forwardRef<ReadiumViewRef, ReadiumProps>(
             onDecorationActivated={callback(onDecorationActivated ?? noop)}
             onSelectionChange={callback(onSelectionChange ?? noop)}
             onSelectionAction={callback(onSelectionAction ?? noop)}
+            onTTSStateChange={callback(onTTSStateChange ?? noop)}
+            onTTSUtterance={callback(onTTSUtterance ?? noop)}
+            onTTSError={callback(onTTSError ?? noop)}
             hybridRef={callback((ref: any) => {
               hybridRef.current = ref;
             })}

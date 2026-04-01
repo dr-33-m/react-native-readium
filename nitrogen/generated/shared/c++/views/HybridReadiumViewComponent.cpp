@@ -66,6 +66,16 @@ namespace margelo::nitro::readium::views {
         throw std::runtime_error(std::string("ReadiumView.selectionActions: ") + exc.what());
       }
     }()),
+    suppressNativeSelectionMenu([&]() -> CachedProp<std::optional<bool>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("suppressNativeSelectionMenu", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.suppressNativeSelectionMenu;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<bool>>::fromRawValue(*runtime, value, sourceProps.suppressNativeSelectionMenu);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("ReadiumView.suppressNativeSelectionMenu: ") + exc.what());
+      }
+    }()),
     onLocationChange([&]() -> CachedProp<std::optional<std::function<void(const Locator& /* locator */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("onLocationChange", nullptr, nullptr);
@@ -116,6 +126,36 @@ namespace margelo::nitro::readium::views {
         throw std::runtime_error(std::string("ReadiumView.onSelectionAction: ") + exc.what());
       }
     }()),
+    onTTSStateChange([&]() -> CachedProp<std::optional<std::function<void(const TTSState& /* state */)>>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("onTTSStateChange", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.onTTSStateChange;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<std::function<void(const TTSState& /* state */)>>>::fromRawValue(*runtime, value.asObject(*runtime).getProperty(*runtime, PropNameIDCache::get(*runtime, "f")), sourceProps.onTTSStateChange);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("ReadiumView.onTTSStateChange: ") + exc.what());
+      }
+    }()),
+    onTTSUtterance([&]() -> CachedProp<std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("onTTSUtterance", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.onTTSUtterance;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<std::function<void(const TTSUtteranceEvent& /* event */)>>>::fromRawValue(*runtime, value.asObject(*runtime).getProperty(*runtime, PropNameIDCache::get(*runtime, "f")), sourceProps.onTTSUtterance);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("ReadiumView.onTTSUtterance: ") + exc.what());
+      }
+    }()),
+    onTTSError([&]() -> CachedProp<std::optional<std::function<void(const std::string& /* error */)>>> {
+      try {
+        const react::RawValue* rawValue = rawProps.at("onTTSError", nullptr, nullptr);
+        if (rawValue == nullptr) return sourceProps.onTTSError;
+        const auto& [runtime, value] = (std::pair<jsi::Runtime*, jsi::Value>)*rawValue;
+        return CachedProp<std::optional<std::function<void(const std::string& /* error */)>>>::fromRawValue(*runtime, value.asObject(*runtime).getProperty(*runtime, PropNameIDCache::get(*runtime, "f")), sourceProps.onTTSError);
+      } catch (const std::exception& exc) {
+        throw std::runtime_error(std::string("ReadiumView.onTTSError: ") + exc.what());
+      }
+    }()),
     hybridRef([&]() -> CachedProp<std::optional<std::function<void(const std::shared_ptr<HybridReadiumViewSpec>& /* ref */)>>> {
       try {
         const react::RawValue* rawValue = rawProps.at("hybridRef", nullptr, nullptr);
@@ -133,11 +173,15 @@ namespace margelo::nitro::readium::views {
       case hashString("preferences"): return true;
       case hashString("decorations"): return true;
       case hashString("selectionActions"): return true;
+      case hashString("suppressNativeSelectionMenu"): return true;
       case hashString("onLocationChange"): return true;
       case hashString("onPublicationReady"): return true;
       case hashString("onDecorationActivated"): return true;
       case hashString("onSelectionChange"): return true;
       case hashString("onSelectionAction"): return true;
+      case hashString("onTTSStateChange"): return true;
+      case hashString("onTTSUtterance"): return true;
+      case hashString("onTTSError"): return true;
       case hashString("hybridRef"): return true;
       default: return false;
     }

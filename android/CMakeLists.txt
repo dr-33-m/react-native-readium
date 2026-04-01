@@ -9,4 +9,4 @@ set(CMAKE_CXX_STANDARD 20)
 add_library(NitroReadium SHARED src/main/cpp/cpp-adapter.cpp)
 
 # Include nitrogen-generated sources, definitions, and linkages
-include(${CMAKE_SOURCE_DIR}/../nitrogen/generated/android/NitroReadium+autolinking.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../nitrogen/generated/android/NitroReadium+autolinking.cmake)

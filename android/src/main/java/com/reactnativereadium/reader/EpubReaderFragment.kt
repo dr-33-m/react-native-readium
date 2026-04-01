@@ -14,7 +14,10 @@ import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.reactnativereadium.R
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.readium.r2.navigator.DecorableNavigator
 import org.readium.r2.navigator.SelectableNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
@@ -48,6 +51,10 @@ class EpubReaderFragment : VisualReaderFragment() {
     // Selection actions configuration
     private var selectionActions: List<SelectionAction> = emptyList()
 
+    // When true, the native Copy/Select-all/Share toolbar is suppressed in favour
+    // of the custom React Native selection bar.
+    var suppressNativeSelectionMenu: Boolean = false
+
     // Custom selection action mode callback for adding custom action buttons
     val customSelectionActionModeCallback: ActionMode.Callback by lazy {
         SelectionActionModeCallback()
@@ -65,11 +72,13 @@ class EpubReaderFragment : VisualReaderFragment() {
 
     fun initFactory(
       publication: Publication,
-      initialLocation: Locator?
+      initialLocation: Locator?,
+      bookId: String
     ) {
       factory = ReaderViewModel.Factory(
         publication,
-        initialLocation
+        initialLocation,
+        bookId
       )
       navigatorFactory = EpubNavigatorFactory(publication)
     }
@@ -120,8 +129,17 @@ class EpubReaderFragment : VisualReaderFragment() {
               initialLocator = model.initialLocation,
               initialPreferences = userPreferences,
               configuration = EpubNavigatorFragment.Configuration {
-                if (selectionActions.isNotEmpty()) {
-                  selectionActionModeCallback = customSelectionActionModeCallback
+                when {
+                  suppressNativeSelectionMenu -> selectionActionModeCallback = object : ActionMode.Callback {
+                    override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+                        menu.clear()
+                        return true
+                    }
+                    override fun onPrepareActionMode(mode: ActionMode, menu: Menu) = false
+                    override fun onActionItemClicked(mode: ActionMode, item: MenuItem) = false
+                    override fun onDestroyActionMode(mode: ActionMode) {}
+                  }
+                  selectionActions.isNotEmpty() -> selectionActionModeCallback = customSelectionActionModeCallback
                 }
               }
             )
@@ -153,6 +171,30 @@ class EpubReaderFragment : VisualReaderFragment() {
 
         // Set initial position label color based on current preferences
         updatePositionLabelColor()
+
+        // Inject selection/caret color CSS on every page render so it survives chapter navigation
+        navigatorFragment.currentLocator
+            .onEach {
+                delay(150)
+                navigatorFragment.evaluateJavascript(SELECTION_COLOR_JS)
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    companion object {
+        fun newInstance(): EpubReaderFragment = EpubReaderFragment()
+
+        // Gold primary color: #f2ca50 — matches both app themes (dark = #f2ca50, light ≈ same hue)
+        private const val SELECTION_COLOR_JS = """
+            (function(){
+                var id='__app_sel_style__';
+                if(document.getElementById(id))return;
+                var s=document.createElement('style');
+                s.id=id;
+                s.textContent='::selection{background-color:rgba(242,202,80,0.35)!important;}:root,:root *{caret-color:#f2ca50!important;}';
+                (document.head||document.documentElement).appendChild(s);
+            })();
+        """
     }
 
     override fun onResume() {
@@ -244,10 +286,4 @@ class EpubReaderFragment : VisualReaderFragment() {
         }
     }
 
-    companion object {
-
-        fun newInstance(): EpubReaderFragment {
-            return EpubReaderFragment()
-        }
-    }
 }

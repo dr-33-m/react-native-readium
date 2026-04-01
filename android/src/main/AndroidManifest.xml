@@ -1,5 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.reactnativereadium">
+
+  <!-- Required for TTS service discovery on Android 11+ -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.TTS_SERVICE" />
+    </intent>
+  </queries>
+
   <application
     android:networkSecurityConfig="@xml/network_security_config">
   </application>

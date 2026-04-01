@@ -215,6 +215,30 @@ open class HybridReadiumViewSpec_cxx {
     }
   }
   
+  public final var suppressNativeSelectionMenu: bridge.std__optional_bool_ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_bool_ in
+        if let __unwrappedValue = self.__implementation.suppressNativeSelectionMenu {
+          return bridge.create_std__optional_bool_(__unwrappedValue)
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.suppressNativeSelectionMenu = { () -> Bool? in
+        if bridge.has_value_std__optional_bool_(newValue) {
+          let __unwrapped = bridge.get_std__optional_bool_(newValue)
+          return __unwrapped
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
+  
   public final var onLocationChange: bridge.std__optional_std__function_void_const_Locator_____locator______ {
     @inline(__always)
     get {
@@ -374,6 +398,102 @@ open class HybridReadiumViewSpec_cxx {
       }()
     }
   }
+  
+  public final var onTTSStateChange: bridge.std__optional_std__function_void_const_TTSState_____state______ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_std__function_void_const_TTSState_____state______ in
+        if let __unwrappedValue = self.__implementation.onTTSStateChange {
+          return bridge.create_std__optional_std__function_void_const_TTSState_____state______({ () -> bridge.Func_void_TTSState in
+            let __closureWrapper = Func_void_TTSState(__unwrappedValue)
+            return bridge.create_Func_void_TTSState(__closureWrapper.toUnsafe())
+          }())
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.onTTSStateChange = { () -> ((_ state: TTSState) -> Void)? in
+        if bridge.has_value_std__optional_std__function_void_const_TTSState_____state______(newValue) {
+          let __unwrapped = bridge.get_std__optional_std__function_void_const_TTSState_____state______(newValue)
+          return { () -> (TTSState) -> Void in
+            let __wrappedFunction = bridge.wrap_Func_void_TTSState(__unwrapped)
+            return { (__state: TTSState) -> Void in
+              __wrappedFunction.call(__state)
+            }
+          }()
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
+  
+  public final var onTTSUtterance: bridge.std__optional_std__function_void_const_TTSUtteranceEvent_____event______ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_std__function_void_const_TTSUtteranceEvent_____event______ in
+        if let __unwrappedValue = self.__implementation.onTTSUtterance {
+          return bridge.create_std__optional_std__function_void_const_TTSUtteranceEvent_____event______({ () -> bridge.Func_void_TTSUtteranceEvent in
+            let __closureWrapper = Func_void_TTSUtteranceEvent(__unwrappedValue)
+            return bridge.create_Func_void_TTSUtteranceEvent(__closureWrapper.toUnsafe())
+          }())
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.onTTSUtterance = { () -> ((_ event: TTSUtteranceEvent) -> Void)? in
+        if bridge.has_value_std__optional_std__function_void_const_TTSUtteranceEvent_____event______(newValue) {
+          let __unwrapped = bridge.get_std__optional_std__function_void_const_TTSUtteranceEvent_____event______(newValue)
+          return { () -> (TTSUtteranceEvent) -> Void in
+            let __wrappedFunction = bridge.wrap_Func_void_TTSUtteranceEvent(__unwrapped)
+            return { (__event: TTSUtteranceEvent) -> Void in
+              __wrappedFunction.call(__event)
+            }
+          }()
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
+  
+  public final var onTTSError: bridge.std__optional_std__function_void_const_std__string_____error______ {
+    @inline(__always)
+    get {
+      return { () -> bridge.std__optional_std__function_void_const_std__string_____error______ in
+        if let __unwrappedValue = self.__implementation.onTTSError {
+          return bridge.create_std__optional_std__function_void_const_std__string_____error______({ () -> bridge.Func_void_std__string in
+            let __closureWrapper = Func_void_std__string(__unwrappedValue)
+            return bridge.create_Func_void_std__string(__closureWrapper.toUnsafe())
+          }())
+        } else {
+          return .init()
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__implementation.onTTSError = { () -> ((_ error: String) -> Void)? in
+        if bridge.has_value_std__optional_std__function_void_const_std__string_____error______(newValue) {
+          let __unwrapped = bridge.get_std__optional_std__function_void_const_std__string_____error______(newValue)
+          return { () -> (String) -> Void in
+            let __wrappedFunction = bridge.wrap_Func_void_std__string(__unwrapped)
+            return { (__error: String) -> Void in
+              __wrappedFunction.call(std.string(__error))
+            }
+          }()
+        } else {
+          return nil
+        }
+      }()
+    }
+  }
 
   // Methods
   @inline(__always)
@@ -413,6 +533,83 @@ open class HybridReadiumViewSpec_cxx {
   public final func destroy() -> bridge.Result_void_ {
     do {
       try self.__implementation.destroy()
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func ttsStart(config: TTSConfig) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.ttsStart(config: config)
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func ttsStop() -> bridge.Result_void_ {
+    do {
+      try self.__implementation.ttsStop()
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func ttsPause() -> bridge.Result_void_ {
+    do {
+      try self.__implementation.ttsPause()
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func ttsResume() -> bridge.Result_void_ {
+    do {
+      try self.__implementation.ttsResume()
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func ttsSetRate(rate: Double) -> bridge.Result_void_ {
+    do {
+      try self.__implementation.ttsSetRate(rate: rate)
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func ttsSkipNext() -> bridge.Result_void_ {
+    do {
+      try self.__implementation.ttsSkipNext()
+      return bridge.create_Result_void_()
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_void_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func ttsSkipPrevious() -> bridge.Result_void_ {
+    do {
+      try self.__implementation.ttsSkipPrevious()
       return bridge.create_Result_void_()
     } catch (let __error) {
       let __exceptionPtr = __error.toCpp()

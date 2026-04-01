@@ -22,6 +22,8 @@ namespace margelo::nitro::readium {
       prototype.registerHybridSetter("decorations", &HybridReadiumViewSpec::setDecorations);
       prototype.registerHybridGetter("selectionActions", &HybridReadiumViewSpec::getSelectionActions);
       prototype.registerHybridSetter("selectionActions", &HybridReadiumViewSpec::setSelectionActions);
+      prototype.registerHybridGetter("suppressNativeSelectionMenu", &HybridReadiumViewSpec::getSuppressNativeSelectionMenu);
+      prototype.registerHybridSetter("suppressNativeSelectionMenu", &HybridReadiumViewSpec::setSuppressNativeSelectionMenu);
       prototype.registerHybridGetter("onLocationChange", &HybridReadiumViewSpec::getOnLocationChange);
       prototype.registerHybridSetter("onLocationChange", &HybridReadiumViewSpec::setOnLocationChange);
       prototype.registerHybridGetter("onPublicationReady", &HybridReadiumViewSpec::getOnPublicationReady);
@@ -32,10 +34,23 @@ namespace margelo::nitro::readium {
       prototype.registerHybridSetter("onSelectionChange", &HybridReadiumViewSpec::setOnSelectionChange);
       prototype.registerHybridGetter("onSelectionAction", &HybridReadiumViewSpec::getOnSelectionAction);
       prototype.registerHybridSetter("onSelectionAction", &HybridReadiumViewSpec::setOnSelectionAction);
+      prototype.registerHybridGetter("onTTSStateChange", &HybridReadiumViewSpec::getOnTTSStateChange);
+      prototype.registerHybridSetter("onTTSStateChange", &HybridReadiumViewSpec::setOnTTSStateChange);
+      prototype.registerHybridGetter("onTTSUtterance", &HybridReadiumViewSpec::getOnTTSUtterance);
+      prototype.registerHybridSetter("onTTSUtterance", &HybridReadiumViewSpec::setOnTTSUtterance);
+      prototype.registerHybridGetter("onTTSError", &HybridReadiumViewSpec::getOnTTSError);
+      prototype.registerHybridSetter("onTTSError", &HybridReadiumViewSpec::setOnTTSError);
       prototype.registerHybridMethod("goTo", &HybridReadiumViewSpec::goTo);
       prototype.registerHybridMethod("goForward", &HybridReadiumViewSpec::goForward);
       prototype.registerHybridMethod("goBackward", &HybridReadiumViewSpec::goBackward);
       prototype.registerHybridMethod("destroy", &HybridReadiumViewSpec::destroy);
+      prototype.registerHybridMethod("ttsStart", &HybridReadiumViewSpec::ttsStart);
+      prototype.registerHybridMethod("ttsStop", &HybridReadiumViewSpec::ttsStop);
+      prototype.registerHybridMethod("ttsPause", &HybridReadiumViewSpec::ttsPause);
+      prototype.registerHybridMethod("ttsResume", &HybridReadiumViewSpec::ttsResume);
+      prototype.registerHybridMethod("ttsSetRate", &HybridReadiumViewSpec::ttsSetRate);
+      prototype.registerHybridMethod("ttsSkipNext", &HybridReadiumViewSpec::ttsSkipNext);
+      prototype.registerHybridMethod("ttsSkipPrevious", &HybridReadiumViewSpec::ttsSkipPrevious);
     });
   }
 
