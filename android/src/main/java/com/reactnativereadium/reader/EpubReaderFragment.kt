@@ -133,11 +133,14 @@ class EpubReaderFragment : VisualReaderFragment() {
                   suppressNativeSelectionMenu -> selectionActionModeCallback = object : ActionMode.Callback {
                     override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
                         menu.clear()
+                        onSelectionActionModeCreated()
                         return true
                     }
                     override fun onPrepareActionMode(mode: ActionMode, menu: Menu) = false
                     override fun onActionItemClicked(mode: ActionMode, item: MenuItem) = false
-                    override fun onDestroyActionMode(mode: ActionMode) {}
+                    override fun onDestroyActionMode(mode: ActionMode) {
+                        onSelectionActionModeDestroyed()
+                    }
                   }
                   selectionActions.isNotEmpty() -> selectionActionModeCallback = customSelectionActionModeCallback
                 }
@@ -225,6 +228,8 @@ class EpubReaderFragment : VisualReaderFragment() {
             // Clear previous action mappings
             actionIdMap.clear()
 
+            onSelectionActionModeCreated()
+
             // Only add menu items if navigator supports decorations
             if (navigator !is DecorableNavigator) {
                 return true
@@ -283,6 +288,7 @@ class EpubReaderFragment : VisualReaderFragment() {
         override fun onDestroyActionMode(mode: ActionMode) {
             // Clean up action mappings
             actionIdMap.clear()
+            onSelectionActionModeDestroyed()
         }
     }
 

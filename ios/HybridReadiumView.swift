@@ -318,6 +318,16 @@ class HybridReadiumView: HybridReadiumViewSpec {
         ))
       }
       manager.onUtterance = { [weak self] locator, text in
+        // Apply TTS decoration natively — bypass React prop round-trip
+        if let nav = self?.readerViewController?.navigator as? DecorableNavigator {
+          let tint = UIColor(red: 0.949, green: 0.792, blue: 0.314, alpha: 0.35) // #f2ca50 @ 35%
+          let decoration = RDecoration(
+            id: "tts-current",
+            locator: locator,
+            style: .highlight(tint: tint, isActive: false)
+          )
+          nav.apply(decorations: [decoration], in: "tts")
+        }
         self?.onTTSUtterance?(TTSUtteranceEvent(
           locator: readiumLocatorToNitro(locator),
           utterance: text,
@@ -343,7 +353,12 @@ class HybridReadiumView: HybridReadiumViewSpec {
     )
   }
 
-  func ttsStop() { readerViewController?.ttsManager?.stop() }
+  func ttsStop() {
+    if let nav = readerViewController?.navigator as? DecorableNavigator {
+      nav.apply(decorations: [], in: "tts")
+    }
+    readerViewController?.ttsManager?.stop()
+  }
   func ttsPause() { readerViewController?.ttsManager?.pause() }
   func ttsResume() { readerViewController?.ttsManager?.resume() }
   func ttsSetRate(rate: Double) { readerViewController?.ttsManager?.setRate(Float(rate)) }

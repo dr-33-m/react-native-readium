@@ -3,7 +3,9 @@ package com.reactnativereadium.reader
 import android.app.Application
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.navigator.media.common.MediaNavigator
@@ -108,8 +110,14 @@ class TTSManager(
                 }
                 .launchIn(this)
 
-            // Observe current locator
-            ttsNavigator.currentLocator
+            // Observe utterance-level locator (sentence, not word).
+            // TtsNavigator.currentLocator returns tokenLocator ?: utteranceLocator — the
+            // word-level locator — which has incomplete CSS selectors and cannot be rendered
+            // by the EPUB decorator. utteranceLocator is the sentence-level locator and
+            // matches what the Readium test app (TtsViewModel.highlight) uses.
+            ttsNavigator.location
+                .map { it.utteranceLocator }
+                .distinctUntilChanged()
                 .onEach { locator ->
                     val text = locator.text.highlight ?: ""
                     onUtterance(locator, text)

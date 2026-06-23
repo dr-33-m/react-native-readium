@@ -30,7 +30,7 @@ android {
   compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
   namespace "com.reactnativereadium"
   defaultConfig {
-    minSdkVersion 24
+    minSdkVersion 26
     targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
     versionCode 1
     versionName "1.0"

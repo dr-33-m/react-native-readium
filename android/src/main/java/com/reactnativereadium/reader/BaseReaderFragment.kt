@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.reactnativereadium.utils.EventChannel
 import com.reactnativereadium.utils.LinkOrLocator
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -41,6 +42,14 @@ abstract class BaseReaderFragment : Fragment() {
 
   // TTS
   private var ttsManager: TTSManager? = null
+
+  // True while the user has an active text selection.
+  // applyDecorations injects JS into the EPUB WebView; doing so while the user
+  // is dragging selection handles causes the selection to jump or reset.
+  protected var isUserSelecting = false
+
+  // Bounded polling job for selection tracking — runs only while an ActionMode is active.
+  private var selectionPollingJob: Job? = null
 
   // Track active decoration listeners to avoid duplicates
   private val activeDecorationGroups = mutableSetOf<String>()
@@ -107,8 +116,8 @@ abstract class BaseReaderFragment : Fragment() {
     // Apply any pending decorations now that navigator is ready
     pendingDecorations?.let { applyDecorations(it) }
 
-    // Start monitoring text selection
-    startSelectionMonitoring()
+    // Selection detection is handled via ActionMode callbacks in EpubReaderFragment,
+    // not polling — see onSelectionActionModeCreated/Destroyed.
   }
 
   override fun onHiddenChanged(hidden: Boolean) {
@@ -237,6 +246,7 @@ abstract class BaseReaderFragment : Fragment() {
           }
         },
         onUtterance = { locator, text ->
+          applyTTSDecoration(locator) // Apply decoration natively — no JS round-trip
           viewScope.launch {
             channel.send(ReaderViewModel.Event.TTSUtterance(locator, text, null, null))
           }
@@ -262,73 +272,124 @@ abstract class BaseReaderFragment : Fragment() {
     }
   }
 
-  fun ttsStop() { ttsManager?.stop() }
+  fun ttsStop() {
+    ttsManager?.stop()
+    clearTTSDecoration()
+  }
   fun ttsPause() { ttsManager?.pause() }
   fun ttsResume() { ttsManager?.resume() }
   fun ttsSetRate(rate: Float) { ttsManager?.setRate(rate) }
   fun ttsSkipNext() { ttsManager?.skipNext() }
   fun ttsSkipPrevious() { ttsManager?.skipPrevious() }
 
+  private fun applyTTSDecoration(locator: Locator) {
+    if (!isNavigatorReady) return
+    if (isUserSelecting) return  // skip DOM update while user drags selection handles
+    val decorableNavigator = navigator as? DecorableNavigator ?: return
+    // applyDecorations is suspend in Readium 3.x — must be called from a coroutine.
+    // viewLifecycleOwner.lifecycleScope dispatches to Dispatchers.Main, matching
+    // the observeWhenStarted pattern used by the Readium test app.
+    viewLifecycleOwner.lifecycleScope.launch {
+      decorableNavigator.applyDecorations(
+        listOf(
+          Decoration(
+            id = "tts",
+            locator = locator,
+            style = Decoration.Style.Highlight(
+              tint = android.graphics.Color.argb(89, 0xF2, 0xCA, 0x50) // #f2ca50 @ 35%
+            )
+          )
+        ),
+        "tts"
+      )
+    }
+  }
+
+  private fun clearTTSDecoration() {
+    if (!isNavigatorReady) return
+    val decorableNavigator = navigator as? DecorableNavigator ?: return
+    viewLifecycleOwner.lifecycleScope.launch {
+      decorableNavigator.applyDecorations(emptyList(), "tts")
+    }
+  }
+
   override fun onDestroyView() {
+    selectionPollingJob?.cancel()
+    selectionPollingJob = null
+    clearTTSDecoration()
     ttsManager?.cleanup()
     ttsManager = null
     super.onDestroyView()
   }
 
   /**
-   * Start monitoring text selection and emit selection change events.
+   * Called by [EpubReaderFragment] when the WebView's ActionMode is created
+   * (i.e. the user has started a text selection). Starts a bounded polling loop
+   * that samples [SelectableNavigator.currentSelection] every 500ms and emits
+   * [SelectionChanged] events so the React Native side can track handle-drag
+   * adjustments and show the highlight menu with the correct locator.
    *
-   * Uses 500ms polling because Readium's [SelectableNavigator] does not
-   * provide an observable API (Flow, callback, or listener) for selection
-   * changes. The only available method is the suspending
-   * [SelectableNavigator.currentSelection], which must be called on-demand.
-   * Polling is the least-invasive way to detect changes without forking the
-   * Readium toolkit.
+   * Polling is scoped to the ActionMode lifecycle (started here, cancelled in
+   * [onSelectionActionModeDestroyed]) so it never runs in the background.
+   * The 500ms initial delay lets the long-press gesture fully settle before
+   * the first JavaScript query, avoiding disruption to the initial selection.
+   *
+   * Note: `onPrepareActionMode` is not called during handle drags and
+   * `onSelectionEnd` (Readium JS bridge) only fires when selection collapses —
+   * neither can replace polling for tracking mid-selection adjustments.
    */
-  private fun startSelectionMonitoring() {
-    val viewScope = viewLifecycleOwner.lifecycleScope
-
-    viewScope.launch {
-      var previousSelection: Locator? = null
-
+  fun onSelectionActionModeCreated() {
+    isUserSelecting = true
+    selectionPollingJob?.cancel()
+    selectionPollingJob = viewLifecycleOwner.lifecycleScope.launch {
+      var previousLocator: Locator? = null
+      // Wait for long-press gesture to finish before first JS query.
+      delay(500)
       while (true) {
-        delay(500) // Check every 500ms
-
-        if (!isNavigatorReady) continue
-
-        val selectableNavigator = navigator as? SelectableNavigator
-        if (selectableNavigator == null) continue
-
-        val currentSelection = try {
-          selectableNavigator.currentSelection()
-        } catch (e: Exception) {
-          android.util.Log.w("BaseReaderFragment", "Error getting selection: ${e.message}")
-          null
-        }
-
-        val currentLocator = currentSelection?.locator
-        val currentText = currentLocator?.text?.highlight
-
-        // Check if selection has changed
-        val hasChanged = when {
-          previousSelection == null && currentLocator == null -> false
-          previousSelection == null || currentLocator == null -> true
-          previousSelection.href != currentLocator.href -> true
-          previousSelection.text.highlight != currentText -> true
-          else -> false
-        }
-
-        if (hasChanged) {
-          channel.send(
-            ReaderViewModel.Event.SelectionChanged(
-              locator = currentLocator,
-              selectedText = currentText
+        if (isNavigatorReady) {
+          val sel = try {
+            (navigator as? SelectableNavigator)?.currentSelection()
+          } catch (e: Exception) { null }
+          val locator = sel?.locator
+          val text = locator?.text?.highlight
+          val hasChanged = when {
+            previousLocator == null && locator == null -> false
+            previousLocator == null || locator == null -> true
+            previousLocator.href != locator.href -> true
+            previousLocator.text.highlight != text -> true
+            else -> false
+          }
+          if (hasChanged) {
+            channel.send(
+              ReaderViewModel.Event.SelectionChanged(
+                locator = locator,
+                selectedText = text
+              )
             )
-          )
-
-          previousSelection = currentLocator
+            previousLocator = locator
+          }
         }
+        delay(500)
       }
+    }
+  }
+
+  /**
+   * Called by [EpubReaderFragment] when the WebView's ActionMode is destroyed
+   * (i.e. the user taps away or the selection is dismissed). Cancels the
+   * polling job and notifies the React Native side that selection is cleared.
+   */
+  fun onSelectionActionModeDestroyed() {
+    isUserSelecting = false
+    selectionPollingJob?.cancel()
+    selectionPollingJob = null
+    viewLifecycleOwner.lifecycleScope.launch {
+      channel.send(
+        ReaderViewModel.Event.SelectionChanged(
+          locator = null,
+          selectedText = null
+        )
+      )
     }
   }
 
