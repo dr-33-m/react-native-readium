@@ -61,7 +61,10 @@ class ReaderViewController: UIViewController, Loggable {
     NotificationCenter.default.removeObserver(self)
     positionsLoadingTask?.cancel()
     removeNavigatorInputObservers()
-    ttsManager?.cleanup()
+    let manager = ttsManager
+    Task { @MainActor in
+      manager?.cleanup()
+    }
   }
 
   override func viewDidLoad() {

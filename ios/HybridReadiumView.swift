@@ -45,6 +45,8 @@ class HybridReadiumView: HybridReadiumViewSpec {
     }
   }
 
+  var suppressNativeSelectionMenu: Bool? = nil
+
   var onLocationChange: ((Locator) -> Void)? = nil
   var onPublicationReady: ((PublicationReadyEvent) -> Void)? = nil
   var onDecorationActivated: ((DecorationActivatedEvent) -> Void)? = nil
@@ -126,8 +128,6 @@ class HybridReadiumView: HybridReadiumViewSpec {
     if let navigator = readerViewController?.navigator as? EPUBNavigatorViewController {
       let epubPrefs = nitroPreferencesToEPUB(prefs)
       navigator.submitPreferences(epubPrefs)
-    } else if let pdfVC = readerViewController as? PDFViewController {
-      pdfVC.updatePreferences(prefs)
     }
   }
 
@@ -243,8 +243,8 @@ class HybridReadiumView: HybridReadiumViewSpec {
 
       // Extract cover image (works for both EPUB and PDF via Readium's built-in CoverService)
       var coverPath: String? = nil
-      let coverImage = await vc.publication.cover
-      if let image = coverImage {
+      let coverResult = await vc.publication.cover()
+      if case .success(let image?) = coverResult {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let coversDir = docs.appendingPathComponent("covers")
         try? FileManager.default.createDirectory(at: coversDir, withIntermediateDirectories: true)
@@ -305,6 +305,7 @@ class HybridReadiumView: HybridReadiumViewSpec {
 
   // MARK: - TTS
 
+  @MainActor
   private func ensureTTSManager() -> TTSManager? {
     guard let vc = readerViewController else { return nil }
 
@@ -344,31 +345,65 @@ class HybridReadiumView: HybridReadiumViewSpec {
   }
 
   func ttsStart(config: TTSConfig) {
-    guard let manager = ensureTTSManager() else { return }
-    manager.start(
-      rate: config.rate.map { Float($0) },
-      language: config.language,
-      voice: config.voice,
-      fromLocator: nil
-    )
+    let rate = config.rate.map { Float($0) }
+    let language = config.language
+    let voice = config.voice
+
+    Task { @MainActor [weak self] in
+      guard let self = self else { return }
+      guard let manager = self.ensureTTSManager() else { return }
+      manager.start(
+        rate: rate,
+        language: language,
+        voice: voice,
+        fromLocator: nil
+      )
+    }
   }
 
   func ttsStop() {
-    if let nav = readerViewController?.navigator as? DecorableNavigator {
-      nav.apply(decorations: [], in: "tts")
+    Task { @MainActor [weak self] in
+      guard let self = self else { return }
+      if let nav = self.readerViewController?.navigator as? DecorableNavigator {
+        nav.apply(decorations: [], in: "tts")
+      }
+      self.readerViewController?.ttsManager?.stop()
     }
-    readerViewController?.ttsManager?.stop()
   }
-  func ttsPause() { readerViewController?.ttsManager?.pause() }
-  func ttsResume() { readerViewController?.ttsManager?.resume() }
-  func ttsSetRate(rate: Double) { readerViewController?.ttsManager?.setRate(Float(rate)) }
-  func ttsSkipNext() { readerViewController?.ttsManager?.skipNext() }
-  func ttsSkipPrevious() { readerViewController?.ttsManager?.skipPrevious() }
+  func ttsPause() {
+    Task { @MainActor [weak self] in
+      self?.readerViewController?.ttsManager?.pause()
+    }
+  }
+  func ttsResume() {
+    Task { @MainActor [weak self] in
+      self?.readerViewController?.ttsManager?.resume()
+    }
+  }
+  func ttsSetRate(rate: Double) {
+    let rate = Float(rate)
+    Task { @MainActor [weak self] in
+      self?.readerViewController?.ttsManager?.setRate(rate)
+    }
+  }
+  func ttsSkipNext() {
+    Task { @MainActor [weak self] in
+      self?.readerViewController?.ttsManager?.skipNext()
+    }
+  }
+  func ttsSkipPrevious() {
+    Task { @MainActor [weak self] in
+      self?.readerViewController?.ttsManager?.skipPrevious()
+    }
+  }
 
   // Cleanup
   func cleanup() {
     guard let vc = readerViewController else { return }
-    vc.ttsManager?.cleanup()
+    let ttsManager = vc.ttsManager
+    Task { @MainActor in
+      ttsManager?.cleanup()
+    }
     readerViewController = nil
 
     vc.willMove(toParent: nil)
