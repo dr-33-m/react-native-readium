@@ -352,11 +352,25 @@ class HybridReadiumView: HybridReadiumViewSpec {
     Task { @MainActor [weak self] in
       guard let self = self else { return }
       guard let manager = self.ensureTTSManager() else { return }
+      // Start TTS from the first element visible on screen — the same approach
+      // as Readium's TestApp TTSViewModel. The navigator's currentLocation is a
+      // coarse resource-level progression that the speech synthesizer maps back
+      // to text imprecisely (it can resolve a couple of pages early), whereas
+      // firstVisibleElementLocator() is anchored to an actual DOM element.
+      // Without either, iOS passed nil and TTSManager fell back to
+      // synth.start() (from the start of the publication).
+      var fromLocator: RLocator? = nil
+      if let visual = self.readerViewController?.navigator as? VisualNavigator {
+        fromLocator = await visual.firstVisibleElementLocator()
+      }
+      if fromLocator == nil {
+        fromLocator = self.readerViewController?.navigator.currentLocation
+      }
       manager.start(
         rate: rate,
         language: language,
         voice: voice,
-        fromLocator: nil
+        fromLocator: fromLocator
       )
     }
   }
