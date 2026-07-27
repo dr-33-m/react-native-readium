@@ -2,6 +2,7 @@ package com.reactnativereadium.reader
 
 import android.graphics.Color
 import android.view.Gravity
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import kotlinx.coroutines.CoroutineScope
@@ -66,6 +67,8 @@ class PositionLabelManager(
         containerView.addView(label, params)
         // Ensure label is above navigator fragment
         label.bringToFront()
+        // Hidden — the host app renders its own reading-progress UI.
+        label.visibility = View.GONE
     }
 
     /**
