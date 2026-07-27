@@ -98,6 +98,8 @@ class ReaderViewController: UIViewController, Loggable {
     positionLabel.translatesAutoresizingMaskIntoConstraints = false
     positionLabel.font = .systemFont(ofSize: 12)
     positionLabel.textColor = .darkGray
+    // Hidden — the host app renders its own reading-progress UI.
+    positionLabel.isHidden = true
     view.addSubview(positionLabel)
     NSLayoutConstraint.activate([
       positionLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
